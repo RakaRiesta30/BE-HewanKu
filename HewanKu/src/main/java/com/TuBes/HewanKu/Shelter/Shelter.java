@@ -1,11 +1,16 @@
 package com.TuBes.HewanKu.Shelter;
 
 import java.io.Serializable;
+import java.util.List;
 
+import com.TuBes.HewanKu.Hewan.Hewan;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
@@ -20,6 +25,9 @@ public class Shelter implements Serializable {
     private String noTelepon;
     private String email;
     private String password;
+    
+    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL)
+    private List<Hewan> daftarHewan;
 
     public Shelter() {
     }
@@ -69,6 +77,14 @@ public class Shelter implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<Hewan> getDaftarHewan() {
+        return daftarHewan;
+    }
+
+    public void setDaftarHewan(List<Hewan> daftarHewan) {
+        this.daftarHewan = daftarHewan;
     }
 
 }
