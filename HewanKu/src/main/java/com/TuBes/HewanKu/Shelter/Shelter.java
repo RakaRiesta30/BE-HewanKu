@@ -25,6 +25,7 @@ public class Shelter implements Serializable {
     private String noTelepon;
     private String email;
     private String password;
+    private String otp;
     
     @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL)
     private List<Hewan> daftarHewan;
@@ -85,6 +86,14 @@ public class Shelter implements Serializable {
 
     public void setDaftarHewan(List<Hewan> daftarHewan) {
         this.daftarHewan = daftarHewan;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 
 }

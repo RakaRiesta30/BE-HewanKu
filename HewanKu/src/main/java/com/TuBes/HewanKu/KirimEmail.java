@@ -2,12 +2,10 @@ package com.TuBes.HewanKu;
 
 import java.util.*;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
-import jakarta.activation.*;
 
 @Service
 public class KirimEmail {

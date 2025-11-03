@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.time.LocalDate;
 
-import org.springframework.cglib.core.Local;
-
 import jakarta.persistence.*;
 
 @Entity

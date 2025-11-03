@@ -5,8 +5,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.websocket.server.PathParam;
-
 @RestController
 @RequestMapping("/home/{id}")
 public class HewanController {

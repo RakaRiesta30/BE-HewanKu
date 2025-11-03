@@ -20,4 +20,20 @@ public class ShelterController {
     public Map<String, Object> login(@RequestBody ShelterDTO shelterDTO) {
         return shelterService.login(shelterDTO.getEmail(), shelterDTO.getPassword());
     }
+
+    @PostMapping("/forgot")
+    public Map<String, Object> forgotPassword(@RequestBody ShelterDTO shelterDTO) {
+        return shelterService.forgotPassword(shelterDTO.getEmail());
+    }
+
+    @PostMapping("/verify")
+    public Map<String, Object> verifyOtp(@RequestBody ShelterDTO shelterDTO) {
+        return shelterService.verifyOtp(shelterDTO.getOtp(), shelterDTO.getEmail());
+    }
+
+    @PostMapping("/change")
+    public Map<String, Object> changePassword(@RequestBody ShelterDTO shelterDTO) {
+        return shelterService.changePassword(shelterDTO.getPassword(), shelterDTO.getRepassword(),
+                shelterDTO.getEmail());
+    }
 }
