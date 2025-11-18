@@ -17,7 +17,7 @@ public class HewanController {
         return hewanService.createHewan(hewanDTO, id);
     }
 
-    @GetMapping("/view")
+    @GetMapping("/home")
     public Map<String, Object> viewHewan(@RequestParam String role ,@PathVariable Long id){
         return hewanService.viewHewan(role, id);
     }
@@ -30,5 +30,10 @@ public class HewanController {
     @DeleteMapping("/delete")
     public Map<String, Object> deleteHewan(@PathVariable Long id, @RequestParam Long idHewan){
         return hewanService.deleteHewan(id, idHewan);
+    }
+
+    @GetMapping("/adopsi")
+    public Map<String, Object> filterHewan(@PathVariable Long id,@RequestBody FilterDTO filterDTO){
+        return hewanService.filterHewan(id, filterDTO);
     }
 }

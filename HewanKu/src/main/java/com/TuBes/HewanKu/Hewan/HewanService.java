@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -101,6 +100,16 @@ public class HewanService {
                         response.put("Pesan", "Hewan tidak ditemukan");
                     });
             }, () -> response.put("Pesan", "Shelter tidak ditemukan"));
+        return response;
+    }
+
+    public Map<String, Object> filterHewan(Long id, FilterDTO filterDTO){
+        Map<String, Object> response = new HashMap<>();
+        penggunaRepository.findById(id)
+            .ifPresentOrElse(pengguna -> {
+                List<Hewan> hewanList = hewanRepository.getReferenceByJenisAndHargaBetween(filterDTO.getJenis(), filterDTO.getHargaMin(), filterDTO.getHargaMax());
+                response.put("data hewan", hewanList);
+            }, () -> response.put("Pesan","Pengguna tidak ditemukan"));
         return response;
     }
 }

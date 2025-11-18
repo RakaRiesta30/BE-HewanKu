@@ -17,7 +17,7 @@ public class Hewan implements Serializable {
     private Long id;
     private String nama;
     private String jenis;
-    private Long harga;
+    private Double harga;
     private String status;
     private String kesehatan;
     private LocalDate updatedDate;
@@ -30,7 +30,7 @@ public class Hewan implements Serializable {
     public Hewan() {
     }
 
-    public Hewan(Long harga, String jenis, String kesehatan, String nama, String status, LocalDate updatedDate, Shelter shelter) {
+    public Hewan(Double harga, String jenis, String kesehatan, String nama, String status, LocalDate updatedDate, Shelter shelter) {
         this.harga = harga;
         this.jenis = jenis;
         this.kesehatan = kesehatan;
@@ -62,14 +62,6 @@ public class Hewan implements Serializable {
 
     public void setJenis(String jenis) {
         this.jenis = jenis;
-    }
-
-    public Long getHarga() {
-        return harga;
-    }
-
-    public void setHarga(Long harga) {
-        this.harga = harga;
     }
 
     public String getStatus() {
@@ -104,5 +96,12 @@ public class Hewan implements Serializable {
         this.shelter = shelter;
     }
 
+    public Double getHarga() {
+        return harga;
+    }
+
+    public void setHarga(Double harga) {
+        this.harga = harga;
+    }
 
 }
