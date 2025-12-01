@@ -1,6 +1,6 @@
 package com.TuBes.HewanKu.Pengguna;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.TuBes.HewanKu.BaseResponse;
 import com.TuBes.HewanKu.KirimEmail;
 
 import jakarta.transaction.Transactional;
@@ -17,20 +18,22 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class PenggunaService {
     private final PenggunaRepository penggunaRepository;
+    private final BaseResponse res;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     private KirimEmail mail;
 
     @Autowired
-    public PenggunaService(PenggunaRepository penggunaRepository) {
+    public PenggunaService(PenggunaRepository penggunaRepository, BaseResponse res) {
         this.penggunaRepository = penggunaRepository;
+        this.res = res;
     }
-
+    
     public Map<String, Object> register(PenggunaDTO penggunaDTO) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findByEmail(penggunaDTO.getEmail())
-                .ifPresentOrElse(ada -> response.put("pesan", "Akun Sudah Tersedia"),
+                .ifPresentOrElse(ada -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
                         () -> {
                             Pengguna pengguna = new Pengguna(
                                     penggunaDTO.getEmail(),
@@ -38,65 +41,65 @@ public class PenggunaService {
                                     penggunaDTO.getNoTelepon(),
                                     passwordEncoder.encode(penggunaDTO.getPassword()));
                             penggunaRepository.save(pengguna);
-                            response.put("pesan", "Akun Telah Ditambahkan");
+                            response.putAll(res.CREATED("Akun telah terbuat", null, null));
                         });
         return response;
     }
 
     public Map<String, Object> login(String email, String password) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findByEmail(email)
                 .ifPresentOrElse(pengguna -> {
                     if (passwordEncoder.matches(password, pengguna.getPassword())) {
-                        response.put("pesan", "Password Benar");
+                        response.putAll(res.OK("Password benar", null, null));
                     } else {
-                        response.put("pesan", "Password atau email salah");
+                        response.putAll(res.UNAUTHORIZED("Email atau password salah", null, "Unauthorized, Email atau password salah"));
                     }
-                }, () -> response.put("pesan", "email tidak ditemukan"));
+                }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         return response;
     }
 
     public Map<String, Object> forgotPassword(String email) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findByEmail(email)
                 .ifPresentOrElse(pengguna -> {
                     pengguna.setOtp(mail.sendEmail(email));
                     penggunaRepository.save(pengguna);
                     if (!pengguna.getOtp().equals("Salah")) {
-                        response.put("pesan", "Kode Berhasil dikirim");
+                        response.putAll(res.OK("Kode berhasil dikirim", null, null));
                     } else {
-                        response.put("pesan", "error");
+                        response.putAll(res.UNAUTHORIZED("Error", null, "Unauthorized, Error"));
                     }
-                }, () -> response.put("pesan", "email tidak ditemukan"));
+                }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         return response;
     }
 
     public Map<String, Object> verifyOtp(String otp, String email) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findByEmail(email)
                 .ifPresentOrElse(pengguna -> {
                     if (otp.equals("Salah")) {
-                        response.put("pesan", "OTP Salah");
+                        response.putAll(res.UNAUTHORIZED("OTP Salah", null, "Unauthorized, OTP Salah"));
                     } else if (otp.equals(pengguna.getOtp())) {
-                        response.put("pesan", "OTP Benar");
+                        response.putAll(res.OK("OTP benar", null, null));
                     } else {
-                        response.put("pesan", "OTP Salah");
+                        response.putAll(res.UNAUTHORIZED("OTP Salah", null, "Unauthorized, OTP Salah"));
                     }
-                }, () -> response.put("pesan", "email tidak ditemukan"));
+                }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         return response;
     }
 
     public Map<String, Object> changePassword(String password, String repassword, String email) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         if (!password.equals(repassword)) {
-            response.put("pesan", "Masukkan ulang password");
+            response.putAll(res.UNAUTHORIZED("Masukkan ulang password", null, "Unauthorized, Masukkan ulang password"));
         } else {
             penggunaRepository.findByEmail(email)
                     .ifPresentOrElse(pengguna -> {
                         pengguna.setPassword(passwordEncoder.encode(password));
                         penggunaRepository.save(pengguna);
-                        response.put("pesan", "Password berhasil diganti");
-                    }, () -> response.put("pesan", "email tidak ditemukan"));
+                        response.putAll(res.OK("Password telah diganti", null, null));
+                    }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         }
         return response;
     }

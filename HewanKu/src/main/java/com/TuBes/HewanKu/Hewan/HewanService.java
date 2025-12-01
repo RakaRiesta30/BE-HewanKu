@@ -1,12 +1,14 @@
 package com.TuBes.HewanKu.Hewan;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.TuBes.HewanKu.BaseResponse;
 import com.TuBes.HewanKu.Pengguna.PenggunaRepository;
 import com.TuBes.HewanKu.Shelter.Shelter;
 import com.TuBes.HewanKu.Shelter.ShelterRepository;
@@ -19,16 +21,18 @@ public class HewanService {
     private final HewanRepository hewanRepository;
     private final ShelterRepository shelterRepository;
     private final PenggunaRepository penggunaRepository;
+    private final BaseResponse res;
 
     @Autowired
-    public HewanService(HewanRepository hewanRepository, PenggunaRepository penggunaRepository, ShelterRepository shelterRepository) {
+    public HewanService(HewanRepository hewanRepository, PenggunaRepository penggunaRepository, BaseResponse res, ShelterRepository shelterRepository) {
         this.hewanRepository = hewanRepository;
         this.penggunaRepository = penggunaRepository;
+        this.res = res;
         this.shelterRepository = shelterRepository;
     }
 
     public Map<String, Object> createHewan(HewanDTO hewanDTO, Long id){
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(id)
             .ifPresentOrElse(shelter -> {
                 Hewan hewan = new Hewan(
@@ -43,31 +47,31 @@ public class HewanService {
                 shelter.getDaftarHewan().add(hewan);
                 hewanRepository.save(hewan);
                 shelterRepository.save(shelter);
-                response.put("Pesan", "Hewan telah ditambahkan");
-            }, () -> response.put("Pesan", "Shelter tidak ditemukan"));
+                response.putAll(res.CREATED("Hewan telah terdaftar", null, null));
+            }, () -> response.putAll(res.UNAUTHORIZED("Shelter tidak ditemukan", null, "Unauthorized, Shelter tidak ditemukan ")));
         return response;
     }
 
     public Map<String, Object> viewHewan(String role, Long id){
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         if (role.equals("shelter")){
             shelterRepository.findById(id)
                 .ifPresentOrElse(shelter -> {
                     List<Hewan> daftarHewan = shelter.getDaftarHewan();
-                    response.put("Data hewan", daftarHewan);
-                }, () -> response.put("Pesan", "Shelter tidak ditemukan"));
+                    response.putAll(res.OK("Hewan ditemukan", daftarHewan, null));
+                }, () -> response.putAll(res.UNAUTHORIZED("Shelter tidak ditemukan", null, "Unauthorized, Shelter tidak ditemukan ")));
         } else {
             penggunaRepository.findById(id)
                 .ifPresentOrElse(pengguna -> {
                     List<Shelter> daftarShelter = shelterRepository.findAll();
-                    response.put("Data hewan", daftarShelter);
-                }, () -> response.put("Pesan", "Pengguna tidak ditemukan"));
+                    response.putAll(res.OK("Shelter ditemukan", daftarShelter, null));
+                }, () -> response.putAll(res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
         }
         return response;
     }
 
     public Map<String, Object> editHewan(HewanDTO hewanDTO, Long id, Long idHewan){
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(id)
             .ifPresentOrElse(shelter -> {
                 hewanRepository.findById(idHewan)
@@ -80,36 +84,36 @@ public class HewanService {
                         hewan.setUpdatedDate(LocalDate.now());
                         hewan.setShelter(shelter);
                         hewanRepository.save(hewan);
-                        response.put("Pesan", "Hewan telah diubah");
+                        response.putAll(res.OK("Hewan telah diubah", null, null));
                     }, () -> {
-                        response.put("Pesan", "Hewan tidak ditemukan");
+                        response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null, "Unauthorized, Hewan tidak ditemukan "));
                     });
-            }, () -> response.put("Pesan", "Shelter tidak ditemukan"));
+            }, () -> response.putAll(res.UNAUTHORIZED("Shelter tidak ditemukan", null, "Unauthorized, Shelter tidak ditemukan ")));
         return response;
     }
 
     public Map<String, Object> deleteHewan(Long id, Long idHewan){
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(id)
             .ifPresentOrElse(shelter -> {
                 hewanRepository.findById(idHewan)
                     .ifPresentOrElse(hewan -> {
                         hewanRepository.delete(hewan);
-                        response.put("Pesan", "Hewan telah dihapus");
+                        response.putAll(res.OK("Hewan telah dihapus", null, null));
                     }, () -> {
-                        response.put("Pesan", "Hewan tidak ditemukan");
+                        response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null, "Unauthorized, Hewan tidak ditemukan "));
                     });
-            }, () -> response.put("Pesan", "Shelter tidak ditemukan"));
+            }, () -> response.putAll(res.UNAUTHORIZED("Shelter tidak ditemukan", null, "Unauthorized, Shelter tidak ditemukan ")));
         return response;
     }
 
     public Map<String, Object> filterHewan(Long id, FilterDTO filterDTO){
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findById(id)
             .ifPresentOrElse(pengguna -> {
                 List<Hewan> hewanList = hewanRepository.getReferenceByJenisAndHargaBetween(filterDTO.getJenis(), filterDTO.getHargaMin(), filterDTO.getHargaMax());
-                response.put("data hewan", hewanList);
-            }, () -> response.put("Pesan","Pengguna tidak ditemukan"));
+                response.putAll(res.OK("Hewan telah difilter", hewanList, null));
+            }, () -> response.putAll(res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
         return response;
     }
 }
