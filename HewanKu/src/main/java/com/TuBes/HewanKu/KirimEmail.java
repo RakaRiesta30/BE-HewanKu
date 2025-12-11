@@ -1,11 +1,18 @@
 package com.TuBes.HewanKu;
 
-import java.util.*;
+import java.util.Properties;
+import java.util.Random;
 
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.*;
-import jakarta.mail.internet.*;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class KirimEmail {
