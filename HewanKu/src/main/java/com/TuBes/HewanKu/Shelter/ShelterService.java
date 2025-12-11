@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.TuBes.HewanKu.KirimEmail;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.transaction.Transactional;
@@ -27,7 +27,7 @@ public class ShelterService {
     }
 
     public Map<String, Object> register(ShelterDTO shelterDTO) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findByEmail(shelterDTO.getEmail())
                 .ifPresentOrElse(ada -> response.put("pesan", "Akun Sudah Tersedia"),
                         () -> {
@@ -43,7 +43,7 @@ public class ShelterService {
     }
 
     public Map<String, Object> login(String email, String password) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findByEmail(email)
                 .ifPresentOrElse(pengguna -> {
                     if (passwordEncoder.matches(password, pengguna.getPassword())) {
@@ -56,7 +56,7 @@ public class ShelterService {
     }
 
     public Map<String, Object> forgotPassword(String email) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findByEmail(email)
                 .ifPresentOrElse(shelter -> {
                     shelter.setOtp(mail.sendEmail(email));
@@ -71,7 +71,7 @@ public class ShelterService {
     }
 
     public Map<String, Object> verifyOtp(String otp, String email) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findByEmail(email)
                 .ifPresentOrElse(shelter -> {
                     if (otp.equals("Salah")) {
@@ -86,7 +86,7 @@ public class ShelterService {
     }
 
     public Map<String, Object> changePassword(String password, String repassword, String email) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new LinkedHashMap<>();
         if (!password.equals(repassword)) {
             response.put("pesan", "Masukkan ulang password");
         } else {
