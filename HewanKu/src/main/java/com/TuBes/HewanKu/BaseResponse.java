@@ -3,6 +3,9 @@ package com.TuBes.HewanKu;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class BaseResponse {
     private Map<String, Object> base(int code, String status, Object message, Object data, Object errors) {
         Map<String, Object> response = new LinkedHashMap<>();
