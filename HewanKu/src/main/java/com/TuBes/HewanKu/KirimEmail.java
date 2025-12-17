@@ -38,7 +38,7 @@ public class KirimEmail {
         Session session = Session.getInstance(properties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(sender, "pmiq wcyo jrej puca");
+                return new PasswordAuthentication(sender, "uvdr tzjh zfih lsdq");
             }
         });
 

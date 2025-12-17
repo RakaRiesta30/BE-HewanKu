@@ -116,4 +116,16 @@ public class HewanService {
             }, () -> response.putAll(res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
         return response;
     }
+
+    public Map<String, Object> detailHewan(Long id, Long idHewan){
+        Map<String, Object> response = new LinkedHashMap<>();
+        penggunaRepository.findById(id)
+            .ifPresentOrElse(pengguna -> {
+                hewanRepository.findById(idHewan)
+                    .ifPresentOrElse(hewan -> {
+                        response.putAll(res.OK("Hewan ditemukan", hewan, null));
+                    }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null, "Unauthorized, Hewan tidak ditemukan")));
+            }, () -> response.putAll(res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
+        return response;
+    }
 }
