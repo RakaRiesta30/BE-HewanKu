@@ -44,7 +44,7 @@ public class HewanController {
         return hewanService.filterHewan(id, filterDTO);
     }
 
-    @PostMapping("")
+    @GetMapping("")
     public Map<String, Object> detailHewan(@PathVariable Long id, @RequestParam Long idHewan){
         return hewanService.detailHewan(id, idHewan);
     }

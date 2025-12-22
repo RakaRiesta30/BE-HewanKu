@@ -28,6 +28,7 @@ public class Hewan implements Serializable {
     private String status;
     private String kesehatan;
     private LocalDate updatedDate;
+    private Double rating;
 
     @ManyToOne
     @JoinColumn(name = "shelter_id")
@@ -37,14 +38,15 @@ public class Hewan implements Serializable {
     public Hewan() {
     }
 
-    public Hewan(Double harga, String jenis, String kesehatan, String nama, String status, LocalDate updatedDate, Shelter shelter) {
+    public Hewan(Double harga, String jenis, String kesehatan, String nama, Double rating, Shelter shelter, String status, LocalDate updatedDate) {
         this.harga = harga;
         this.jenis = jenis;
         this.kesehatan = kesehatan;
         this.nama = nama;
+        this.rating = rating;
+        this.shelter = shelter;
         this.status = status;
         this.updatedDate = updatedDate;
-        this.shelter = shelter;
     }
 
     public Long getId() {
@@ -109,6 +111,14 @@ public class Hewan implements Serializable {
 
     public void setHarga(Double harga) {
         this.harga = harga;
+    }
+
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
     }
 
 }

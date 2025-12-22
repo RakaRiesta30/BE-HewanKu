@@ -1,13 +1,12 @@
 package com.TuBes.HewanKu.Pengguna;
 
 import java.util.LinkedHashMap;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.TuBes.HewanKu.BaseResponse;
 import com.TuBes.HewanKu.KirimEmail;
@@ -81,7 +80,7 @@ public class PenggunaService {
                     if (otp.equals("Salah")) {
                         response.putAll(res.UNAUTHORIZED("OTP Salah", null, "Unauthorized, OTP Salah"));
                     } else if (otp.equals(pengguna.getOtp())) {
-                        response.putAll(res.OK("OTP benar", null, null));
+                        response.putAll(res.OK("OTP benar", null, null));response.putAll(res.OK("OTP benar", null, null));
                     } else {
                         response.putAll(res.UNAUTHORIZED("OTP Salah", null, "Unauthorized, OTP Salah"));
                     }

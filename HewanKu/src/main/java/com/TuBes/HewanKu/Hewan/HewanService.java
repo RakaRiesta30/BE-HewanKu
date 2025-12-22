@@ -40,9 +40,10 @@ public class HewanService {
                     hewanDTO.getJenis(),
                     hewanDTO.getKesehatan(),
                     hewanDTO.getNama(),
+                    0.0,
+                    shelter,
                     hewanDTO.getStatus(),
-                    LocalDate.now(),
-                    shelter
+                    LocalDate.now()
                 );
                 shelter.getDaftarHewan().add(hewan);
                 hewanRepository.save(hewan);
