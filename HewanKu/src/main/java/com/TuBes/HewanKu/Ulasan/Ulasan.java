@@ -12,15 +12,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "ulasan")
 public class Ulasan implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="ulasan_sequence")
-    @SequenceGenerator(name="ulasan_sequence", sequenceName="ulasan_sequence", allocationSize=100)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     private String komen;
     private Double rating;

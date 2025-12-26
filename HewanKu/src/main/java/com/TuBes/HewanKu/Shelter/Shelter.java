@@ -4,22 +4,21 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.TuBes.HewanKu.Hewan.Hewan;
+import com.TuBes.HewanKu.Pesanan.Pesanan;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "shelter")
 public class Shelter implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "shelter_sequence")
-    @SequenceGenerator(name = "shelter_sequence", sequenceName = "shelter_sequence", allocationSize = 100)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nama;
     private String noTelepon;
@@ -27,8 +26,13 @@ public class Shelter implements Serializable {
     private String password;
     private String otp;
     
-    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "shelter")
+    @JsonIgnore
     private List<Hewan> daftarHewan;
+    
+    @OneToMany(mappedBy = "shelter")
+    @JsonIgnore
+    private List<Pesanan> pesanan;
 
     public Shelter() {
     }
@@ -94,6 +98,14 @@ public class Shelter implements Serializable {
 
     public void setOtp(String otp) {
         this.otp = otp;
+    }
+
+    public List<Pesanan> getPesanan() {
+        return pesanan;
+    }
+
+    public void setPesanan(List<Pesanan> pesanan) {
+        this.pesanan = pesanan;
     }
 
 }

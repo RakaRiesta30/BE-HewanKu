@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.TuBes.HewanKu.Pesanan.Pesanan;
 import com.TuBes.HewanKu.Shelter.Shelter;
 import com.TuBes.HewanKu.Ulasan.Ulasan;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,15 +16,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "hewan")
 public class Hewan implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="hewan_sequence")
-    @SequenceGenerator(name="hewan_sequence", sequenceName="hewan_sequence", allocationSize=100)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     private String nama;
     private String jenis;
@@ -35,12 +34,15 @@ public class Hewan implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "shelter_id")
-    @JsonIgnore
     private Shelter shelter;
 
     @OneToMany(mappedBy="hewan")
     @JsonIgnore
     private List<Ulasan> ulasan;
+
+    @OneToMany(mappedBy="hewan")
+    @JsonIgnore
+    private List<Pesanan> pesanan;
 
     public Hewan() {
     }
@@ -134,5 +136,13 @@ public class Hewan implements Serializable {
 
     public void setUlasan(List<Ulasan> ulasan) {
         this.ulasan = ulasan;
+    }
+
+    public List<Pesanan> getPesanan() {
+        return pesanan;
+    }
+
+    public void setPesanan(List<Pesanan> pesanan) {
+        this.pesanan = pesanan;
     }
 }
