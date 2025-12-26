@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HewanRepository extends JpaRepository<Hewan, Long> {
-    List<Hewan> getReferenceByJenisAndHargaBetween(String jenis, Double hargaMin, Double hargaMax);
+    List<Hewan> getReferenceByJenisAndHargaBetween(String jenis, double hargaMin, double hargaMax);
 }

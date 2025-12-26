@@ -1,28 +1,31 @@
-// package com.TuBes.HewanKu.Ulasan;
+package com.TuBes.HewanKu.Ulasan;
 
-// public class UlasanDTO {
-//     private String komen;
-//     private Double rating;
+public class UlasanDTO {
+    private String komen;
+    private Double rating;
 
-//     public UlasanDTO(String komen, Double rating) {
-//         this.komen = komen;
-//         this.rating = rating;
-//     }
+    public UlasanDTO(String komen, Double rating) {
+        this.komen = komen;
+        this.rating = rating;
+    }
 
-//     public String getKomen() {
-//         return komen;
-//     }
+    public UlasanDTO() {
+    }
 
-//     public void setKomen(String komen) {
-//         this.komen = komen;
-//     }
+    public String getKomen() {
+        return komen;
+    }
 
-//     public Double getRating() {
-//         return rating;
-//     }
+    public void setKomen(String komen) {
+        this.komen = komen;
+    }
 
-//     public void setRating(Double rating) {
-//         this.rating = rating;
-//     }
+    public Double getRating() {
+        return rating;
+    }
 
-// }
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
+}

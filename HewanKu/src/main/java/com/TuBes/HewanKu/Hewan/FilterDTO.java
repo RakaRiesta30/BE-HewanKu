@@ -2,8 +2,8 @@ package com.TuBes.HewanKu.Hewan;
 
 public class FilterDTO {
     private String jenis;
-    private Double hargaMin;
-    private Double hargaMax;
+    private double hargaMin;
+    private double hargaMax;
 
     public String getJenis() {
         return jenis;

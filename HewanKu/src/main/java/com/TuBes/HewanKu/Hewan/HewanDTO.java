@@ -4,7 +4,7 @@ package com.TuBes.HewanKu.Hewan;
 public class HewanDTO {
     private String nama;
     private String jenis;
-    private Double harga;
+    private double harga;
     private String status;
     private String kesehatan;
 
@@ -40,11 +40,11 @@ public class HewanDTO {
         this.kesehatan = kesehatan;
     }
 
-    public Double getHarga() {
+    public double getHarga() {
         return harga;
     }
 
-    public void setHarga(Double harga) {
+    public void setHarga(double harga) {
         this.harga = harga;
     }
 }

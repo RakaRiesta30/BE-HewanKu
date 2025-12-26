@@ -2,8 +2,10 @@ package com.TuBes.HewanKu.Hewan;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
 
 import com.TuBes.HewanKu.Shelter.Shelter;
+import com.TuBes.HewanKu.Ulasan.Ulasan;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -12,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
@@ -24,21 +27,25 @@ public class Hewan implements Serializable {
     private Long id;
     private String nama;
     private String jenis;
-    private Double harga;
+    private double harga;
     private String status;
     private String kesehatan;
     private LocalDate updatedDate;
-    private Double rating;
+    private double rating;
 
     @ManyToOne
     @JoinColumn(name = "shelter_id")
     @JsonIgnore
     private Shelter shelter;
 
+    @OneToMany(mappedBy="hewan")
+    @JsonIgnore
+    private List<Ulasan> ulasan;
+
     public Hewan() {
     }
 
-    public Hewan(Double harga, String jenis, String kesehatan, String nama, Double rating, Shelter shelter, String status, LocalDate updatedDate) {
+    public Hewan(double harga, String jenis, String kesehatan, String nama, double rating, Shelter shelter, String status, LocalDate updatedDate) {
         this.harga = harga;
         this.jenis = jenis;
         this.kesehatan = kesehatan;
@@ -105,20 +112,27 @@ public class Hewan implements Serializable {
         this.shelter = shelter;
     }
 
-    public Double getHarga() {
+    public double getHarga() {
         return harga;
     }
 
-    public void setHarga(Double harga) {
+    public void setHarga(double harga) {
         this.harga = harga;
     }
 
-    public Double getRating() {
+    public double getRating() {
         return rating;
     }
 
-    public void setRating(Double rating) {
+    public void setRating(double rating) {
         this.rating = rating;
     }
 
+    public List<Ulasan> getUlasan() {
+        return ulasan;
+    }
+
+    public void setUlasan(List<Ulasan> ulasan) {
+        this.ulasan = ulasan;
+    }
 }
