@@ -23,6 +23,7 @@ public class Shelter implements Serializable {
     private String nama;
     private String noTelepon;
     private String email;
+    @JsonIgnore
     private String password;
     private String otp;
     

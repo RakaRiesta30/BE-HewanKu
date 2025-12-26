@@ -37,7 +37,7 @@ public class UlasanService {
                     ulasanDTO.getKomen(),
                     ulasanDTO.getRating());
                 ulasanRepository.save(ulasan);
-                List<Double> rating = ulasanRepository.findById(id)
+                List<Double> rating = ulasanRepository.findByHewan_Id(id)
                     .stream()
                     .map(Ulasan::getRating)
                     .toList();

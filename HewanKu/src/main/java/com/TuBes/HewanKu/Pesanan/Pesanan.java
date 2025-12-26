@@ -2,7 +2,6 @@ package com.TuBes.HewanKu.Pesanan;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Random;
 
 import com.TuBes.HewanKu.Hewan.Hewan;
@@ -10,7 +9,13 @@ import com.TuBes.HewanKu.Pengguna.Pengguna;
 import com.TuBes.HewanKu.Shelter.Shelter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "pesanan")
@@ -20,7 +25,7 @@ public class Pesanan implements Serializable {
     private Long id;
     Random random = new Random();
     private String kodePemesanan = "#" + String.valueOf(10000000 + random.nextInt(90000000));
-    private Map<String, String> form;
+    private String form;
     private String status;
     private LocalDate timeLeft;
     
@@ -41,7 +46,7 @@ public class Pesanan implements Serializable {
     public Pesanan() {
     }
 
-    public Pesanan(Map<String, String> form, Hewan hewan, Pengguna pengguna, String status, LocalDate timeLeft) {
+    public Pesanan(String form, Hewan hewan, Pengguna pengguna, String status, LocalDate timeLeft) {
         this.form = form;
         this.hewan = hewan;
         this.pengguna = pengguna;
@@ -65,11 +70,11 @@ public class Pesanan implements Serializable {
         this.kodePemesanan = kodePemesanan;
     }
 
-    public Map<String, String> getForm() {
+    public String getForm() {
         return form;
     }
 
-    public void setForm(Map<String, String> form) {
+    public void setForm(String form) {
         this.form = form;
     }
 

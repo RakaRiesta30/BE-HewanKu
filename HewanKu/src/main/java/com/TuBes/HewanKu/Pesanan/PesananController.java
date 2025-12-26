@@ -17,7 +17,7 @@ public class PesananController {
     @Autowired
     private PesananService pesananService;
 
-    @PostMapping("/{idPengguna/animal={idHewan}")
+    @PostMapping("/{idPengguna}/{idHewan}/create")
     public Map<String, Object> createPesanan(@PathVariable Long idHewan, @PathVariable Long idPengguna){
         return pesananService.createPesanan(idHewan, idPengguna);
     }
@@ -30,12 +30,12 @@ public class PesananController {
         return pesananService.viewPesananShelter(id);
     }
 
-    @PostMapping("/{idPengguna}/order={id}/")
+    @PostMapping("/{idPengguna}/{id}/fill")
     public Map<String, Object> isiForm(@RequestBody PesananDTO pesananDTO, @PathVariable Long id, @PathVariable Long idPengguna){
         return pesananService.isiForm(pesananDTO, id, idPengguna);
     }
 
-    @PostMapping("/{idShelter}/order={id}/confirm")
+    @PostMapping("/{idShelter}/{id}/confirm")
     public Map<String, Object> confirmForm(@RequestBody PesananDTO pesananDTO, @PathVariable Long id, @PathVariable Long idShelter){
         return pesananService.confirmForm(pesananDTO, id, idShelter);
     }

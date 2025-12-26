@@ -1,16 +1,14 @@
 package com.TuBes.HewanKu.Pesanan;
 
-import java.util.Map;
-
 public class PesananDTO {
-    private Map<String, String> form;
+    private String form;
     private String status;
 
-    public Map<String, String> getForm() {
+    public String getForm() {
         return form;
     }
 
-    public void setForm(Map<String, String> form) {
+    public void setForm(String form) {
         this.form = form;
     }
 

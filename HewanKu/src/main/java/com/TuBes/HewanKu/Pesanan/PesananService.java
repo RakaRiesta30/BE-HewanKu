@@ -40,7 +40,7 @@ public class PesananService {
                         Pesanan pesanan = new Pesanan();
                         pesanan.setPengguna(pengguna);
                         pesanan.setHewan(hewan);
-                        pesanan.setShelter(hewanRepository.findShelterById(idHewan));
+                        pesanan.setShelter(hewan.getShelter());
                         pesananRepository.save(pesanan);
                         response.putAll(res.CREATED("Pesanan telah terbuat", null, null));
                     }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null, "UNAUTHORIZED, Hewan tidak ditemukan"))); 
