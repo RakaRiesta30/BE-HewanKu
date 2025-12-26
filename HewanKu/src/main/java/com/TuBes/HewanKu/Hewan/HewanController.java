@@ -24,13 +24,13 @@ public class HewanController {
         return hewanService.createHewan(hewanDTO, id);
     }
 
-    @GetMapping("/home")
+    @GetMapping("")
     public Map<String, Object> viewHewan(@RequestParam String role ,@PathVariable Long id){
         return hewanService.viewHewan(role, id);
     }
 
-    @PostMapping("/edit")
-    public Map<String, Object> editHewan(@RequestBody HewanDTO hewanDTO, @PathVariable Long id, @RequestParam Long idHewan){
+    @PostMapping("/edit/{idHewan}")
+    public Map<String, Object> editHewan(@RequestBody HewanDTO hewanDTO, @PathVariable Long id, @PathVariable Long idHewan){
         return hewanService.editHewan(hewanDTO, id, idHewan);
     }
 
@@ -44,8 +44,8 @@ public class HewanController {
         return hewanService.filterHewan(id, filterDTO);
     }
 
-    @GetMapping("")
-    public Map<String, Object> detailHewan(@PathVariable Long id, @RequestParam Long idHewan){
+    @GetMapping("/{idHewan}")
+    public Map<String, Object> detailHewan(@PathVariable Long id, @PathVariable Long idHewan){
         return hewanService.detailHewan(id, idHewan);
     }
 }
