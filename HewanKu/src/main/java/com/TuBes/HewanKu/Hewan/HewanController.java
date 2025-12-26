@@ -39,7 +39,7 @@ public class HewanController {
         return hewanService.deleteHewan(id, idHewan);
     }
 
-    @GetMapping("/adopsi")
+    @GetMapping("/filter")
     public Map<String, Object> filterHewan(@PathVariable Long id,@RequestBody FilterDTO filterDTO){
         return hewanService.filterHewan(id, filterDTO);
     }
