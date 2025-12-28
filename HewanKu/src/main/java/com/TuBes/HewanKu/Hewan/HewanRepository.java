@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface HewanRepository extends JpaRepository<Hewan, Long> {
     List<Hewan> getReferenceByJenisAndHargaBetween(String jenis, double hargaMin, double hargaMax);
     Long findShelter_IdById(Long id);
+    long countByShelter_Id(Long shelterId);
 }

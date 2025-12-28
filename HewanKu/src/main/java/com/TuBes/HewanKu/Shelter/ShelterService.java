@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.TuBes.HewanKu.BaseResponse;
+import com.TuBes.HewanKu.Hewan.HewanRepository;
 import com.TuBes.HewanKu.KirimEmail;
 
 import jakarta.transaction.Transactional;
@@ -20,16 +21,18 @@ public class ShelterService {
     private final BaseResponse res;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ShelterAccRepository shelterAccRepository;
+    private final HewanRepository hewanRepository;
 
     @Autowired
     private KirimEmail mail;
 
     @Autowired
     public ShelterService(ShelterRepository shelterRepository, BaseResponse res,
-            ShelterAccRepository shelterAccRepository) {
+            ShelterAccRepository shelterAccRepository, HewanRepository hewanRepository) {
         this.shelterRepository = shelterRepository;
         this.res = res;
         this.shelterAccRepository = shelterAccRepository;
+        this.hewanRepository = hewanRepository;
     }
 
     public Map<String, Object> register(ShelterDTO shelterDTO) {
@@ -182,7 +185,11 @@ public class ShelterService {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(id)
             .ifPresentOrElse(shelter -> {
-                response.putAll(res.OK("Data shelter dimunculkan", shelter, null));
+                long totalHewan = hewanRepository.countByShelter_Id(id);
+                Map<String, Object> data = new LinkedHashMap<>();
+                data.put("totalHewan", totalHewan);
+                data.put("shelter", shelter);
+                response.putAll(res.OK("Data shelter dimunculkan", data, null));
             }, () -> response.putAll(res.UNAUTHORIZED("Shelter tidak ditemukan", null, "UNAUTHORIZED, Shelter tidak ditemukan")));
         return response;
     }
