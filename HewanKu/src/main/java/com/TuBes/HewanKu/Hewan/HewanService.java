@@ -60,7 +60,11 @@ public class HewanService {
             shelterRepository.findById(id)
                 .ifPresentOrElse(shelter -> {
                     List<Hewan> daftarHewan = shelter.getDaftarHewan();
-                    response.putAll(res.OK("Hewan ditemukan", daftarHewan, null));
+                    long totalHewan = hewanRepository.countByShelter_Id(id);
+                    Map<String, Object> data = new LinkedHashMap<>();
+                    data.put("totalHewan", totalHewan);
+                    data.put("dataHewan",daftarHewan);
+                    response.putAll(res.OK("Hewan ditemukan", data, null));
                 }, () -> response.putAll(res.UNAUTHORIZED("Shelter tidak ditemukan", null, "Unauthorized, Shelter tidak ditemukan ")));
         } else {
             penggunaRepository.findById(id)
