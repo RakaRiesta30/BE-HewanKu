@@ -19,14 +19,16 @@ public class ShelterService {
     private final ShelterRepository shelterRepository;
     private final BaseResponse res;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final ShelterAccRepository shelterAccRepository;
 
     @Autowired
     private KirimEmail mail;
 
     @Autowired
-    public ShelterService(ShelterRepository shelterRepository, BaseResponse res) {
+    public ShelterService(ShelterRepository shelterRepository, BaseResponse res,ShelterAccRepository shelterAccRepository) {
         this.shelterRepository = shelterRepository;
         this.res = res;
+        this.shelterAccRepository = shelterAccRepository;
     }
 
     public Map<String, Object> register(ShelterDTO shelterDTO) {
@@ -100,6 +102,27 @@ public class ShelterService {
                         response.putAll(res.OK("Password telah diganti", null, null));
                     }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         }
+        return response;
+    }
+
+    public Map<String, Object> createShelter(ShelterAccDTO shelterAccDTO, Long id){
+        Map<String, Object> response = new LinkedHashMap<>();
+        shelterAccRepository.findByShelter_Id(id)
+            .ifPresentOrElse(shelter -> response.putAll(res.UNAUTHORIZED("Akun sudah membuat shelter", null, "UNAUTHORIZED, Akun sudah membuat shelter")), 
+            () -> {
+                ShelterAcc shelterAcc = new ShelterAcc(
+                    shelterAccDTO.getEmail(), 
+                    shelterAccDTO.getJalan(), 
+                    shelterAccDTO.getMetodePembayaran(), 
+                    shelterAccDTO.getNamaOwner(), 
+                    shelterAccDTO.getNamaShelter(), 
+                    shelterAccDTO.getNegaraDaerah(), 
+                    shelterAccDTO.getNomorHandphone(), 
+                    shelterAccDTO.getZipCode(), 
+                    shelterRepository.getReferenceById(id));
+                shelterAccRepository.save(shelterAcc);
+                response.putAll(res.CREATED("Shelter sudah terbuat", null, null));
+            });
         return response;
     }
 }

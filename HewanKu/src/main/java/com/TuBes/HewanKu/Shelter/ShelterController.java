@@ -3,7 +3,11 @@ package com.TuBes.HewanKu.Shelter;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/shelter")
@@ -35,5 +39,10 @@ public class ShelterController {
     public Map<String, Object> changePassword(@RequestBody ShelterDTO shelterDTO) {
         return shelterService.changePassword(shelterDTO.getPassword(), shelterDTO.getRepassword(),
                 shelterDTO.getEmail());
+    }
+
+    @PostMapping("/create/{idPenjual}") 
+    public Map<String, Object> createShelter(@RequestBody ShelterAccDTO shelterAccDTO, @PathVariable Long idPenjual){
+        return shelterService.createShelter(shelterAccDTO, idPenjual);
     }
 }

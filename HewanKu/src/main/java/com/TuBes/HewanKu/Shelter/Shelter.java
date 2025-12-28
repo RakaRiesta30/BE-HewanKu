@@ -7,11 +7,13 @@ import com.TuBes.HewanKu.Hewan.Hewan;
 import com.TuBes.HewanKu.Pesanan.Pesanan;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -34,6 +36,17 @@ public class Shelter implements Serializable {
     @OneToMany(mappedBy = "shelter")
     @JsonIgnore
     private List<Pesanan> pesanan;
+
+    @OneToOne(mappedBy="shelter", cascade=CascadeType.ALL)
+    private ShelterAcc shelterAcc;
+
+    public ShelterAcc getShelterAcc() {
+        return shelterAcc;
+    }
+
+    public void setShelterAcc(ShelterAcc shelterAcc) {
+        this.shelterAcc = shelterAcc;
+    }
 
     public Shelter() {
     }
