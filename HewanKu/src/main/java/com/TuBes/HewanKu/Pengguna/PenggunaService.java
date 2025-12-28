@@ -62,7 +62,7 @@ public class PenggunaService {
         penggunaRepository.findByEmail(email)
                 .ifPresentOrElse(pengguna -> {
                     if (passwordEncoder.matches(password, pengguna.getPassword())) {
-                        response.putAll(res.OK("Password benar", null, null));
+                        response.putAll(res.OK("Password benar", pengguna, null));
                     } else {
                         response.putAll(res.UNAUTHORIZED("Email atau password salah", null,
                                 "Unauthorized, Email atau password salah"));

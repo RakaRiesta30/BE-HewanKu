@@ -21,7 +21,7 @@ public class ShelterController {
         return shelterService.register(shelterDTO);
     }
 
-    @PostMapping("/login")
+    @GetMapping("/login")
     public Map<String, Object> login(@RequestBody ShelterDTO shelterDTO) {
         return shelterService.login(shelterDTO.getEmail(), shelterDTO.getPassword());
     }
