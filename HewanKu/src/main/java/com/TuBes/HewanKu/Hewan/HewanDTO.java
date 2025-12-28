@@ -6,7 +6,16 @@ public class HewanDTO {
     private String jenis;
     private double harga;
     private String status;
-    private String kesehatan;
+    private int umur;
+    private String jenisKelamin;
+
+    public int getUmur() {
+        return umur;
+    }
+
+    public void setUmur(int umur) {
+        this.umur = umur;
+    }
 
     public String getNama() {
         return nama;
@@ -32,19 +41,19 @@ public class HewanDTO {
         this.status = status;
     }
 
-    public String getKesehatan() {
-        return kesehatan;
-    }
-
-    public void setKesehatan(String kesehatan) {
-        this.kesehatan = kesehatan;
-    }
-
     public double getHarga() {
         return harga;
     }
 
     public void setHarga(double harga) {
         this.harga = harga;
+    }
+
+    public String getJenisKelamin() {
+        return jenisKelamin;
+    }
+
+    public void setJenisKelamin(String jenisKelamin) {
+        this.jenisKelamin = jenisKelamin;
     }
 }
