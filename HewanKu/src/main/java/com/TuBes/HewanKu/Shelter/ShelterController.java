@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.TuBes.HewanKu.Hewan.HewanDTO;
@@ -27,7 +26,7 @@ public class ShelterController {
         return shelterService.register(shelterDTO);
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public Map<String, Object> login(@RequestBody ShelterDTO shelterDTO) {
         return shelterService.login(shelterDTO.getEmail(), shelterDTO.getPassword());
     }
@@ -68,17 +67,17 @@ public class ShelterController {
         return shelterService.viewShelter(idShelter);
     }
 
-    @DeleteMapping("/delete")
-    public Map<String, Object> deleteHewan(@PathVariable Long id, @RequestParam Long idHewan) {
+    @DeleteMapping("/delete/{id}/{idHewan}")
+    public Map<String, Object> deleteHewan(@PathVariable Long id, @PathVariable Long idHewan) {
         return hewanService.deleteHewan(id, idHewan);
     }
 
-    @PostMapping("/add")
+    @PostMapping("/add/{id}")
     public Map<String, Object> createHewan(@RequestBody HewanDTO hewanDTO, @PathVariable Long id) {
         return hewanService.createHewan(hewanDTO, id);
     }
 
-    @PostMapping("/edit/{idHewan}")
+    @PostMapping("/edit/{id}/{idHewan}")
     public Map<String, Object> editHewan(@RequestBody HewanDTO hewanDTO, @PathVariable Long id,
             @PathVariable Long idHewan) {
         return hewanService.editHewan(hewanDTO, id, idHewan);

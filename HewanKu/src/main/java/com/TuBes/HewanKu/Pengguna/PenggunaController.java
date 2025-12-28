@@ -3,7 +3,6 @@ package com.TuBes.HewanKu.Pengguna;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +20,7 @@ public class PenggunaController {
         return penggunaService.register(penggunaDTO);
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public Map<String, Object> login(@RequestBody PenggunaDTO penggunaDTO) {
         return penggunaService.login(penggunaDTO.getEmail(), penggunaDTO.getPassword());
     }
