@@ -45,4 +45,14 @@ public class ShelterController {
     public Map<String, Object> createShelter(@RequestBody ShelterAccDTO shelterAccDTO, @PathVariable Long idPenjual){
         return shelterService.createShelter(shelterAccDTO, idPenjual);
     }
+
+    @PostMapping("/editPenjual/{idPenjual}") 
+    public Map<String, Object> editPenjual(@RequestBody ShelterDTO shelterDTO, @PathVariable Long idPenjual){
+        return shelterService.editPenjual(shelterDTO, idPenjual);
+    }
+
+    @PostMapping("/editShelter/{idShelter}") 
+    public Map<String, Object> editShelter(@RequestBody ShelterAccDTO shelterAccDTO, @PathVariable Long idShelter){
+        return shelterService.editShelter(shelterAccDTO, idShelter);
+    }
 }

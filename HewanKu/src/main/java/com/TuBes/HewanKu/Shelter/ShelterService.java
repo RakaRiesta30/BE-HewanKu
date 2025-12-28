@@ -25,7 +25,8 @@ public class ShelterService {
     private KirimEmail mail;
 
     @Autowired
-    public ShelterService(ShelterRepository shelterRepository, BaseResponse res,ShelterAccRepository shelterAccRepository) {
+    public ShelterService(ShelterRepository shelterRepository, BaseResponse res,
+            ShelterAccRepository shelterAccRepository) {
         this.shelterRepository = shelterRepository;
         this.res = res;
         this.shelterAccRepository = shelterAccRepository;
@@ -34,15 +35,23 @@ public class ShelterService {
     public Map<String, Object> register(ShelterDTO shelterDTO) {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findByEmail(shelterDTO.getEmail())
-                .ifPresentOrElse(ada -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
+                .ifPresentOrElse(
+                        ada -> response.putAll(
+                                res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
                         () -> {
-                            Shelter shelter = new Shelter(
-                                    shelterDTO.getEmail(),
-                                    shelterDTO.getNama(),
-                                    shelterDTO.getNoTelepon(),
-                                    passwordEncoder.encode(shelterDTO.getPassword()));
-                            shelterRepository.save(shelter);
-                            response.putAll(res.CREATED("Akun telah terbuat", null, null));
+                            shelterRepository.findByEmail(shelterDTO.getEmail())
+                                    .ifPresentOrElse(
+                                            adaa -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null,
+                                                    "Unauthorized, Akun sudah tersedia")),
+                                            () -> {
+                                                Shelter shelter = new Shelter(
+                                                        shelterDTO.getEmail(),
+                                                        shelterDTO.getNama(),
+                                                        shelterDTO.getNoTelepon(),
+                                                        passwordEncoder.encode(shelterDTO.getPassword()));
+                                                shelterRepository.save(shelter);
+                                                response.putAll(res.CREATED("Akun telah terbuat", null, null));
+                                            });
                         });
         return response;
     }
@@ -54,9 +63,11 @@ public class ShelterService {
                     if (passwordEncoder.matches(password, pengguna.getPassword())) {
                         response.putAll(res.OK("Password benar", null, null));
                     } else {
-                        response.putAll(res.UNAUTHORIZED("Email atau password salah", null, "Unauthorized, Email atau password salah"));
+                        response.putAll(res.UNAUTHORIZED("Email atau password salah", null,
+                                "Unauthorized, Email atau password salah"));
                     }
-                }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         return response;
     }
 
@@ -71,7 +82,8 @@ public class ShelterService {
                     } else {
                         response.putAll(res.UNAUTHORIZED("Error", null, "Unauthorized, Error"));
                     }
-                }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         return response;
     }
 
@@ -86,7 +98,8 @@ public class ShelterService {
                     } else {
                         response.putAll(res.UNAUTHORIZED("OTP Salah", null, "Unauthorized, OTP Salah"));
                     }
-                }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         return response;
     }
 
@@ -100,29 +113,65 @@ public class ShelterService {
                         shelter.setPassword(passwordEncoder.encode(password));
                         shelterRepository.save(shelter);
                         response.putAll(res.OK("Password telah diganti", null, null));
-                    }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
+                    }, () -> response.putAll(
+                            res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
         }
         return response;
     }
 
-    public Map<String, Object> createShelter(ShelterAccDTO shelterAccDTO, Long id){
+    public Map<String, Object> createShelter(ShelterAccDTO shelterAccDTO, Long id) {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterAccRepository.findByShelter_Id(id)
-            .ifPresentOrElse(shelter -> response.putAll(res.UNAUTHORIZED("Akun sudah membuat shelter", null, "UNAUTHORIZED, Akun sudah membuat shelter")), 
-            () -> {
-                ShelterAcc shelterAcc = new ShelterAcc(
-                    shelterAccDTO.getEmail(), 
-                    shelterAccDTO.getJalan(), 
-                    shelterAccDTO.getMetodePembayaran(), 
-                    shelterAccDTO.getNamaOwner(), 
-                    shelterAccDTO.getNamaShelter(), 
-                    shelterAccDTO.getNegaraDaerah(), 
-                    shelterAccDTO.getNomorHandphone(), 
-                    shelterAccDTO.getZipCode(), 
-                    shelterRepository.getReferenceById(id));
-                shelterAccRepository.save(shelterAcc);
-                response.putAll(res.CREATED("Shelter sudah terbuat", null, null));
-            });
+                .ifPresentOrElse(
+                        shelter -> response.putAll(res.UNAUTHORIZED("Akun sudah membuat shelter", null,
+                                "UNAUTHORIZED, Akun sudah membuat shelter")),
+                        () -> {
+                            ShelterAcc shelterAcc = new ShelterAcc(
+                                    shelterAccDTO.getEmail(),
+                                    shelterAccDTO.getJalan(),
+                                    shelterAccDTO.getMetodePembayaran(),
+                                    shelterAccDTO.getNamaOwner(),
+                                    shelterAccDTO.getNamaShelter(),
+                                    shelterAccDTO.getNegaraDaerah(),
+                                    shelterAccDTO.getNomorHandphone(),
+                                    shelterAccDTO.getZipCode(),
+                                    shelterRepository.getReferenceById(id));
+                            shelterAccRepository.save(shelterAcc);
+                            response.putAll(res.CREATED("Shelter sudah terbuat", null, null));
+                        });
+        return response;
+    }
+
+    public Map<String, Object> editPenjual(ShelterDTO shelterDTO, Long id) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        shelterRepository.findById(id)
+                .ifPresentOrElse(shelter -> {
+                    shelter.setNama(shelterDTO.getNama());
+                    shelter.setEmail(shelterDTO.getEmail());
+                    shelter.setNoTelepon(shelterDTO.getNoTelepon());
+                    shelterRepository.save(shelter);
+                    response.putAll(res.OK("Akun penjual telah diubah", null, null));
+                }, () -> response
+                        .putAll(res.UNAUTHORIZED("Akun tidak ditemukan", null, "UNAUTHORIZED, Akun tidak ditemukan")));
+        return response;
+    }
+
+    public Map<String, Object> editShelter(ShelterAccDTO shelterAccDTO, Long id) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        shelterAccRepository.findById(id)
+                .ifPresentOrElse(shelterAcc -> {
+                    shelterAcc.setEmail(shelterAccDTO.getEmail());
+                    shelterAcc.setJalan(shelterAccDTO.getJalan());
+                    shelterAcc.setMetodePembayaran(shelterAccDTO.getMetodePembayaran());
+                    shelterAcc.setNamaOwner(shelterAccDTO.getNamaOwner());
+                    shelterAcc.setNamaShelter(shelterAccDTO.getNamaShelter());
+                    shelterAcc.setNegaraDaerah(shelterAccDTO.getNegaraDaerah());
+                    shelterAcc.setNomorHandphone(shelterAccDTO.getNomorHandphone());
+                    shelterAcc.setZipCode(shelterAccDTO.getZipCode());
+                    shelterAccRepository.save(shelterAcc);
+                    response.putAll(res.OK("Akun shelter telah diubah", null, null));
+                }, () -> response
+                        .putAll(res.UNAUTHORIZED("Akun tidak ditemukan", null, "UNAUTHORIZED, Akun tidak ditemukan")));
         return response;
     }
 }
