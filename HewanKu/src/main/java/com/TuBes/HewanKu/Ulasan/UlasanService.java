@@ -57,7 +57,16 @@ public class UlasanService {
         Map<String, Object> response = new LinkedHashMap<>();
         hewanRepository.findById(id)
             .ifPresentOrElse(hewan -> {
-                response.putAll(res.OK("Hewan ditemukan", hewan.getUlasan(), null));
+                Map<String, Object> data = new LinkedHashMap<>();
+                for (int i=1;i<=5;i++){
+                    String bintang = "bintang"+i;
+                    Object[] totalBintang = new Object[2];
+                    totalBintang[0] = ulasanRepository.countByHewan_IdAndRating(id, i);
+                    totalBintang[1] = (double) ((Long) totalBintang[0]) / ulasanRepository.countByHewan_Id(id);
+                    data.put(bintang, totalBintang);
+                }
+                data.put("ulasan",hewan.getUlasan());
+                response.putAll(res.OK("Hewan ditemukan", data, null));
             }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null, "UNAUTHORIZED, Hewan tidak ditemukan")));
         return response;
     }

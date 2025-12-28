@@ -9,12 +9,14 @@ import com.TuBes.HewanKu.Pengguna.Pengguna;
 import com.TuBes.HewanKu.Shelter.Shelter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -25,10 +27,12 @@ public class Pesanan implements Serializable {
     private Long id;
     Random random = new Random();
     private String kodePemesanan = "#" + String.valueOf(10000000 + random.nextInt(90000000));
-    private String form;
     private String status;
     private LocalDate timeLeft;
     
+    @OneToOne(mappedBy="pesanan", cascade = CascadeType.ALL)
+    private Form form;
+
     @ManyToOne
     @JoinColumn(name = "pengguna_id")
     @JsonIgnore
@@ -46,7 +50,7 @@ public class Pesanan implements Serializable {
     public Pesanan() {
     }
 
-    public Pesanan(String form, Hewan hewan, Pengguna pengguna, String status, LocalDate timeLeft) {
+    public Pesanan(Form form, Hewan hewan, Pengguna pengguna, String status, LocalDate timeLeft) {
         this.form = form;
         this.hewan = hewan;
         this.pengguna = pengguna;
@@ -70,11 +74,11 @@ public class Pesanan implements Serializable {
         this.kodePemesanan = kodePemesanan;
     }
 
-    public String getForm() {
+    public Form getForm() {
         return form;
     }
 
-    public void setForm(String form) {
+    public void setForm(Form form) {
         this.form = form;
     }
 

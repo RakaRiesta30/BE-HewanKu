@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UlasanRepository extends JpaRepository<Ulasan, Long> {
     List<Ulasan> findByHewan_Id(Long hewanId);
+    long countByHewan_IdAndRating(Long hewanId, int rating);
+    long countByHewan_Id(Long hewanId);
 }

@@ -31,8 +31,8 @@ public class PesananController {
     }
 
     @PostMapping("/{idPengguna}/{id}/fill")
-    public Map<String, Object> isiForm(@RequestBody PesananDTO pesananDTO, @PathVariable Long id, @PathVariable Long idPengguna){
-        return pesananService.isiForm(pesananDTO, id, idPengguna);
+    public Map<String, Object> isiForm(@RequestBody FormDTO formDTO, @PathVariable Long id, @PathVariable Long idPengguna){
+        return pesananService.isiForm(formDTO, id, idPengguna);
     }
 
     @PostMapping("/{idShelter}/{id}/confirm")
