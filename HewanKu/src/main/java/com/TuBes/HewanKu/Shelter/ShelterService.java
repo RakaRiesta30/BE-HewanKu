@@ -123,7 +123,7 @@ public class ShelterService {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterAccRepository.findByShelter_Id(id)
                 .ifPresentOrElse(
-                        shelter -> response.putAll(res.UNAUTHORIZED("Akun sudah membuat shelter", null,
+                        shelterAcc -> response.putAll(res.UNAUTHORIZED("Akun sudah membuat shelter", null,
                                 "UNAUTHORIZED, Akun sudah membuat shelter")),
                         () -> {
                             ShelterAcc shelterAcc = new ShelterAcc(
@@ -137,6 +137,9 @@ public class ShelterService {
                                     shelterAccDTO.getZipCode(),
                                     shelterRepository.getReferenceById(id));
                             shelterAccRepository.save(shelterAcc);
+                            Shelter shelter = shelterRepository.getByShelterAcc_Id(id);
+                            shelter.setStatusShelter(true);
+                            shelterRepository.save(shelter);
                             response.putAll(res.CREATED("Shelter sudah terbuat", null, null));
                         });
         return response;
@@ -172,6 +175,15 @@ public class ShelterService {
                     response.putAll(res.OK("Akun shelter telah diubah", null, null));
                 }, () -> response
                         .putAll(res.UNAUTHORIZED("Akun tidak ditemukan", null, "UNAUTHORIZED, Akun tidak ditemukan")));
+        return response;
+    }
+
+    public Map<String, Object> viewShelter(Long id){
+        Map<String, Object> response = new LinkedHashMap<>();
+        shelterRepository.findById(id)
+            .ifPresentOrElse(shelter -> {
+                response.putAll(res.OK("Data shelter dimunculkan", shelter, null));
+            }, () -> response.putAll(res.UNAUTHORIZED("Shelter tidak ditemukan", null, "UNAUTHORIZED, Shelter tidak ditemukan")));
         return response;
     }
 }

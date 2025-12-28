@@ -25,6 +25,7 @@ public class Shelter implements Serializable {
     private String nama;
     private String noTelepon;
     private String email;
+    private boolean status_shelter = false;
     @JsonIgnore
     private String password;
     private String otp;
@@ -122,4 +123,11 @@ public class Shelter implements Serializable {
         this.pesanan = pesanan;
     }
 
+    public boolean isStatusShelter() {
+        return status_shelter;
+    }
+
+    public void setStatusShelter(boolean status_shelter) {
+        this.status_shelter = status_shelter;
+    }
 }

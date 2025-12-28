@@ -3,6 +3,7 @@ package com.TuBes.HewanKu.Shelter;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -54,5 +55,10 @@ public class ShelterController {
     @PostMapping("/editShelter/{idShelter}") 
     public Map<String, Object> editShelter(@RequestBody ShelterAccDTO shelterAccDTO, @PathVariable Long idShelter){
         return shelterService.editShelter(shelterAccDTO, idShelter);
+    }
+
+    @GetMapping("/view/{idShelter}")
+    public Map<String, Object> viewShelter(@PathVariable Long idShelter){
+        return shelterService.viewShelter(idShelter);
     }
 }
