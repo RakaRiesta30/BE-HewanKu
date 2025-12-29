@@ -1,5 +1,6 @@
 package com.TuBes.HewanKu.Shelter;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -9,8 +10,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.TuBes.HewanKu.BaseResponse;
+import com.TuBes.HewanKu.JWTUtil;
 import com.TuBes.HewanKu.KirimEmail;
 
+import io.jsonwebtoken.Jwts;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -20,16 +23,19 @@ public class ShelterService {
     private final BaseResponse res;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ShelterAccRepository shelterAccRepository;
+    private final JWTUtil jwtUtil;
+    
 
     @Autowired
     private KirimEmail mail;
 
     @Autowired
     public ShelterService(ShelterRepository shelterRepository, BaseResponse res,
-            ShelterAccRepository shelterAccRepository) {
+            ShelterAccRepository shelterAccRepository, JWTUtil jwtUtil) {
         this.shelterRepository = shelterRepository;
         this.res = res;
         this.shelterAccRepository = shelterAccRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     public Map<String, Object> register(ShelterDTO shelterDTO) {
@@ -58,16 +64,28 @@ public class ShelterService {
 
     public Map<String, Object> login(String email, String password) {
         Map<String, Object> response = new LinkedHashMap<>();
+
         shelterRepository.findByEmail(email)
-                .ifPresentOrElse(pengguna -> {
-                    if (passwordEncoder.matches(password, pengguna.getPassword())) {
-                        response.putAll(res.OK("Password benar", pengguna, null));
+                .ifPresentOrElse(shelter -> {
+                    if (passwordEncoder.matches(password, shelter.getPassword())) {
+                        String token = Jwts.builder()
+                                .setSubject(shelter.getId().toString()) // id user
+                                .claim("role", "SHELTER")
+                                .claim("email", shelter.getEmail())
+                                .setIssuedAt(new Date())
+                                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 hari
+                                .signWith(jwtUtil.getKey())
+                                .compact();
+                        Map<String, Object> data = new LinkedHashMap<>();
+                        data.put("token", token);
+                        data.put("id", shelter.getId());
+                        data.put("email", shelter.getEmail());
+                        response.putAll(res.OK("Login berhasil", data, null));
                     } else {
-                        response.putAll(res.UNAUTHORIZED("Email atau password salah", null,
-                                "Unauthorized, Email atau password salah"));
+                        response.putAll(res.UNAUTHORIZED("Email atau password salah",null,"Unauthorized, Email atau password salah"));
                     }
-                }, () -> response.putAll(
-                        res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
+                }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan",null,"Unauthorized, Email tidak ditemukan")));
+
         return response;
     }
 
@@ -178,12 +196,13 @@ public class ShelterService {
         return response;
     }
 
-    public Map<String, Object> viewShelter(Long id){
+    public Map<String, Object> viewShelter(Long id) {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(id)
-            .ifPresentOrElse(shelter -> {
-                response.putAll(res.OK("Data shelter dimunculkan", shelter, null));
-            }, () -> response.putAll(res.UNAUTHORIZED("Shelter tidak ditemukan", null, "UNAUTHORIZED, Shelter tidak ditemukan")));
+                .ifPresentOrElse(shelter -> {
+                    response.putAll(res.OK("Data shelter dimunculkan", shelter, null));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Shelter tidak ditemukan", null, "UNAUTHORIZED, Shelter tidak ditemukan")));
         return response;
     }
 }
