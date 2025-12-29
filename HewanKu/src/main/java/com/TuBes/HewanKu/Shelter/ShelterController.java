@@ -18,9 +18,15 @@ import com.TuBes.HewanKu.Hewan.HewanService;
 @RestController
 @RequestMapping("/shelter")
 public class ShelterController {
+    private final ShelterRepository shelterRepository;
+    
     @Autowired
     private ShelterService shelterService;
     private HewanService hewanService;
+
+    public ShelterController(ShelterRepository shelterRepository) {
+        this.shelterRepository = shelterRepository;
+    }
 
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody ShelterDTO shelterDTO) {
@@ -48,19 +54,23 @@ public class ShelterController {
                 shelterDTO.getEmail());
     }
 
-    @PostMapping("/create/{idPenjual}") 
-    public Map<String, Object> createShelter(@RequestBody ShelterAccDTO shelterAccDTO, @PathVariable Long idPenjual){
-        return shelterService.createShelter(shelterAccDTO, idPenjual);
+    @PostMapping("/create") 
+    public Map<String, Object> createShelter(@RequestBody ShelterAccDTO shelterAccDTO, Authentication authentication){
+        Long idShelter = (Long) authentication.getPrincipal();
+        return shelterService.createShelter(shelterAccDTO, idShelter);
     }
 
-    @PostMapping("/editPenjual/{idPenjual}") 
-    public Map<String, Object> editPenjual(@RequestBody ShelterDTO shelterDTO, @PathVariable Long idPenjual){
-        return shelterService.editPenjual(shelterDTO, idPenjual);
+    @PostMapping("/editPenjual") 
+    public Map<String, Object> editPenjual(@RequestBody ShelterDTO shelterDTO, Authentication authentication){
+        Long idShelter = (Long) authentication.getPrincipal();
+        return shelterService.editPenjual(shelterDTO, idShelter);
     }
 
-    @PostMapping("/editShelter/{idShelter}") 
-    public Map<String, Object> editShelter(@RequestBody ShelterAccDTO shelterAccDTO, @PathVariable Long idShelter){
-        return shelterService.editShelter(shelterAccDTO, idShelter);
+    @PostMapping("/editShelter") 
+    public Map<String, Object> editShelter(@RequestBody ShelterAccDTO shelterAccDTO, Authentication authentication){
+        Long idShelter = (Long) authentication.getPrincipal();
+        ShelterAcc shelterAcc = shelterRepository.getShelterAccById(idShelter);
+        return shelterService.editShelter(shelterAccDTO, shelterAcc.getId());
     }
 
     @GetMapping("/view")
@@ -69,19 +79,22 @@ public class ShelterController {
         return shelterService.viewShelter(idShelter);
     }
 
-    @DeleteMapping("/delete/{id}/{idHewan}")
-    public Map<String, Object> deleteHewan(@PathVariable Long id, @PathVariable Long idHewan) {
-        return hewanService.deleteHewan(id, idHewan);
+    @DeleteMapping("/delete/{idHewan}")
+    public Map<String, Object> deleteHewan(Authentication authentication, @PathVariable Long idHewan) {
+        Long idShelter = (Long) authentication.getPrincipal();
+        return hewanService.deleteHewan(idShelter, idHewan);
     }
 
-    @PostMapping("/add/{id}")
-    public Map<String, Object> createHewan(@RequestBody HewanDTO hewanDTO, @PathVariable Long id) {
-        return hewanService.createHewan(hewanDTO, id);
+    @PostMapping("/add")
+    public Map<String, Object> createHewan(@RequestBody HewanDTO hewanDTO, Authentication authentication) {
+        Long idShelter = (Long) authentication.getPrincipal();
+        return hewanService.createHewan(hewanDTO, idShelter);
     }
 
     @PostMapping("/edit/{id}/{idHewan}")
-    public Map<String, Object> editHewan(@RequestBody HewanDTO hewanDTO, @PathVariable Long id,
+    public Map<String, Object> editHewan(@RequestBody HewanDTO hewanDTO, Authentication authentication,
             @PathVariable Long idHewan) {
-        return hewanService.editHewan(hewanDTO, id, idHewan);
+        Long idShelter = (Long) authentication.getPrincipal();
+        return hewanService.editHewan(hewanDTO, idShelter, idHewan);
     }
 }
