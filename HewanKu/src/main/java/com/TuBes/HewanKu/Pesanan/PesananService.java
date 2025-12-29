@@ -24,7 +24,9 @@ public class PesananService {
     private final BaseResponse res;
 
     @Autowired
-    public PesananService(FormRepository formRepository, HewanRepository hewanRepository, PenggunaRepository penggunaRepository, PesananRepository pesananRepository, BaseResponse res, ShelterRepository shelterRepository) {
+    public PesananService(FormRepository formRepository, HewanRepository hewanRepository,
+            PenggunaRepository penggunaRepository, PesananRepository pesananRepository, BaseResponse res,
+            ShelterRepository shelterRepository) {
         this.formRepository = formRepository;
         this.hewanRepository = hewanRepository;
         this.penggunaRepository = penggunaRepository;
@@ -68,8 +70,8 @@ public class PesananService {
                 .ifPresentOrElse(shelter -> {
                     Map<String, Object> data = new LinkedHashMap<>();
                     data.put("dataMasuk", pesananRepository.countByStatusIsNull());
-                    data.put("dataTerima",pesananRepository.countByStatus("TERIMA"));
-                    data.put("dataTolak",pesananRepository.countByStatus("TOLAK"));
+                    data.put("dataTerima", pesananRepository.countByStatus("TERIMA"));
+                    data.put("dataTolak", pesananRepository.countByStatus("TOLAK"));
                     data.put("dataPesanan", shelter.getPesanan());
                     response.putAll(res.OK("Data pesanan diperlihatkan", data, null));
                 }, () -> response.putAll(
@@ -84,23 +86,23 @@ public class PesananService {
                     pesananRepository.findById(id)
                             .ifPresentOrElse(pesanan -> {
                                 Form form = new Form(
-                                    formDTO.getDaerah(), 
-                                    formDTO.getEmail(), 
-                                    formDTO.isHewanSebelumnya(), 
-                                    formDTO.getJalan(), 
-                                    formDTO.getJenisHewan(), 
-                                    formDTO.getJenisKelamin(), 
-                                    formDTO.isKeluargaAlergi(), 
-                                    formDTO.isLingkunganAman(), 
-                                    formDTO.isMemilikiHewan(), 
-                                    formDTO.getNama(), 
-                                    formDTO.getNoTelepon(), 
-                                    formDTO.getPekerjaanStatus(), 
-                                    pesanan, 
-                                    formDTO.getTanggalHewan(), 
-                                    formDTO.getTanggalLahir(), 
-                                    formDTO.getTempatTinggal(), 
-                                    formDTO.getZipCode());
+                                        formDTO.getDaerah(),
+                                        formDTO.getEmail(),
+                                        formDTO.isHewanSebelumnya(),
+                                        formDTO.getJalan(),
+                                        formDTO.getJenisHewan(),
+                                        formDTO.getJenisKelamin(),
+                                        formDTO.isKeluargaAlergi(),
+                                        formDTO.isLingkunganAman(),
+                                        formDTO.isMemilikiHewan(),
+                                        formDTO.getNama(),
+                                        formDTO.getNoTelepon(),
+                                        formDTO.getPekerjaanStatus(),
+                                        pesanan,
+                                        formDTO.getTanggalHewan(),
+                                        formDTO.getTanggalLahir(),
+                                        formDTO.getTempatTinggal(),
+                                        formDTO.getZipCode());
                                 formRepository.save(form);
                                 pesanan.setForm(form);
                                 pesananRepository.save(pesanan);

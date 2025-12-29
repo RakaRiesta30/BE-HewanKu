@@ -27,48 +27,50 @@ public class UlasanService {
         this.res = res;
     }
 
-    public Map<String, Object> createUlasan(UlasanDTO ulasanDTO, Long id, Long idPengguna){
+    public Map<String, Object> createUlasan(UlasanDTO ulasanDTO, Long id, Long idPengguna) {
         Map<String, Object> response = new LinkedHashMap<>();
         hewanRepository.findById(id)
-            .ifPresentOrElse(hewan -> {
-                Ulasan ulasan = new Ulasan(
-                    LocalDate.now(), 
-                    hewan, 
-                    ulasanDTO.getKomen(),
-                    ulasanDTO.getRating());
-                ulasanRepository.save(ulasan);
-                List<Double> rating = ulasanRepository.findByHewan_Id(id)
-                    .stream()
-                    .map(Ulasan::getRating)
-                    .toList();
-                Double sum = 0.0;
-                for (int i = 0; i < rating.size(); i++){
-                    sum += rating.get(i);
-                }
-                sum = sum/rating.size();
-                hewan.setRating(sum);
-                hewanRepository.save(hewan);
-                response.putAll(res.CREATED("Komen telah terbuat", null, null));
-            }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null, "UNAUTHORIZED, Hewan tidak ditemukan")));
+                .ifPresentOrElse(hewan -> {
+                    Ulasan ulasan = new Ulasan(
+                            LocalDate.now(),
+                            hewan,
+                            ulasanDTO.getKomen(),
+                            ulasanDTO.getRating());
+                    ulasanRepository.save(ulasan);
+                    List<Double> rating = ulasanRepository.findByHewan_Id(id)
+                            .stream()
+                            .map(Ulasan::getRating)
+                            .toList();
+                    Double sum = 0.0;
+                    for (int i = 0; i < rating.size(); i++) {
+                        sum += rating.get(i);
+                    }
+                    sum = sum / rating.size();
+                    hewan.setRating(sum);
+                    hewanRepository.save(hewan);
+                    response.putAll(res.CREATED("Komen telah terbuat", null, null));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Hewan tidak ditemukan", null, "UNAUTHORIZED, Hewan tidak ditemukan")));
         return response;
     }
 
-    public Map<String, Object> viewUlasan(Long id){
+    public Map<String, Object> viewUlasan(Long id) {
         Map<String, Object> response = new LinkedHashMap<>();
         hewanRepository.findById(id)
-            .ifPresentOrElse(hewan -> {
-                Map<String, Object> data = new LinkedHashMap<>();
-                for (int i=1;i<=5;i++){
-                    String bintang = "bintang"+i;
-                    Object[] totalBintang = new Object[2];
-                    totalBintang[0] = ulasanRepository.countByHewan_IdAndRating(id, i);
-                    totalBintang[1] = (double) ((Long) totalBintang[0]) / ulasanRepository.countByHewan_Id(id);
-                    data.put(bintang, totalBintang);
-                }
-                data.put("ulasan",hewan.getUlasan());
-                response.putAll(res.OK("Hewan ditemukan", data, null));
-            }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null, "UNAUTHORIZED, Hewan tidak ditemukan")));
+                .ifPresentOrElse(hewan -> {
+                    Map<String, Object> data = new LinkedHashMap<>();
+                    for (int i = 1; i <= 5; i++) {
+                        String bintang = "bintang" + i;
+                        Object[] totalBintang = new Object[2];
+                        totalBintang[0] = ulasanRepository.countByHewan_IdAndRating(id, i);
+                        totalBintang[1] = (double) ((Long) totalBintang[0]) / ulasanRepository.countByHewan_Id(id);
+                        data.put(bintang, totalBintang);
+                    }
+                    data.put("ulasan", hewan.getUlasan());
+                    response.putAll(res.OK("Hewan ditemukan", data, null));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Hewan tidak ditemukan", null, "UNAUTHORIZED, Hewan tidak ditemukan")));
         return response;
     }
-    
+
 }

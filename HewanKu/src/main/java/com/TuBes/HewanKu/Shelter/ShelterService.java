@@ -24,7 +24,6 @@ public class ShelterService {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ShelterAccRepository shelterAccRepository;
     private final JWTUtil jwtUtil;
-    
 
     @Autowired
     private KirimEmail mail;
@@ -82,9 +81,11 @@ public class ShelterService {
                         data.put("email", shelter.getEmail());
                         response.putAll(res.OK("Login berhasil", data, null));
                     } else {
-                        response.putAll(res.UNAUTHORIZED("Email atau password salah",null,"Unauthorized, Email atau password salah"));
+                        response.putAll(res.UNAUTHORIZED("Email atau password salah", null,
+                                "Unauthorized, Email atau password salah"));
                     }
-                }, () -> response.putAll(res.UNAUTHORIZED("Email tidak ditemukan",null,"Unauthorized, Email tidak ditemukan")));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
 
         return response;
     }

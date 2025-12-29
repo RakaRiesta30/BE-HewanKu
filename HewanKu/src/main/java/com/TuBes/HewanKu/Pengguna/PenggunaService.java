@@ -42,11 +42,13 @@ public class PenggunaService {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findByEmail(penggunaDTO.getEmail())
                 .ifPresentOrElse(
-                        ada -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
+                        ada -> response.putAll(
+                                res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
                         () -> {
                             penggunaRepository.findByEmail(penggunaDTO.getEmail())
                                     .ifPresentOrElse(
-                                            adaa -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
+                                            adaa -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null,
+                                                    "Unauthorized, Akun sudah tersedia")),
                                             () -> {
                                                 Pengguna pengguna = new Pengguna(
                                                         penggunaDTO.getEmail(),
