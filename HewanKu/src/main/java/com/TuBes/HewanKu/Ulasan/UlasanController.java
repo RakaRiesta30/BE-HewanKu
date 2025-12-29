@@ -2,6 +2,7 @@ package com.TuBes.HewanKu.Ulasan;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,18 +11,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/ulasan/{id}")
+@RequestMapping("/ulasan/{idHewan}")
 public class UlasanController {
     @Autowired
     private UlasanService ulasanService;
 
     @PostMapping("/{penggunaId}")
-    public Map<String, Object> createUlasan(@RequestBody UlasanDTO ulasanDTO, @PathVariable Long id, @PathVariable Long penggunaId){
-        return ulasanService.createUlasan(ulasanDTO, id, penggunaId);
+    public Map<String, Object> createUlasan(@RequestBody UlasanDTO ulasanDTO, @PathVariable Long idHewan, Authentication authentication){
+        Long idPengguna = (Long) authentication.getPrincipal();
+        return ulasanService.createUlasan(ulasanDTO, idHewan, idPengguna);
     }
 
     @GetMapping("")
-    public Map<String, Object> viewUlasan(@PathVariable Long id){
-        return ulasanService.viewUlasan(id);
+    public Map<String, Object> viewUlasan(@PathVariable Long idHewan){
+        return ulasanService.viewUlasan(idHewan);
     }
 }

@@ -27,23 +27,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-        if (path.equals("/shelter/login") || path.equals("/shelter/register") || path.equals("/pengguna/login") || path.equals("/pengguna/register")) {
+        if (path.equals("/shelter/login") || path.equals("/shelter/register") || path.equals("/pengguna/login")
+                || path.equals("/pengguna/register")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        if (authHeader == null ||
+                (!authHeader.startsWith("Bearer ") && !authHeader.startsWith("Access-Token "))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Missing or invalid Authorization header");
             return;
         }
 
-        String token = authHeader.substring(7);
+        String token;
+        if (authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring("Bearer ".length());
+        } else {
+            token = authHeader.substring("Access-Token ".length());
+        }
 
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(jwtUtil.getKey())
@@ -54,12 +61,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Long userId = Long.parseLong(claims.getSubject());
         String role = claims.get("role", String.class);
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        userId,              // principal
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                );
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userId,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 

@@ -91,7 +91,7 @@ public class ShelterController {
         return hewanService.createHewan(hewanDTO, idShelter);
     }
 
-    @PostMapping("/edit/{id}/{idHewan}")
+    @PostMapping("/edit/{idHewan}")
     public Map<String, Object> editHewan(@RequestBody HewanDTO hewanDTO, Authentication authentication,
             @PathVariable Long idHewan) {
         Long idShelter = (Long) authentication.getPrincipal();

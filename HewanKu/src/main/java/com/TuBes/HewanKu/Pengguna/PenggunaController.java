@@ -3,7 +3,7 @@ package com.TuBes.HewanKu.Pengguna;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,8 +41,9 @@ public class PenggunaController {
                 penggunaDTO.getEmail());
     }
 
-    @PostMapping("/editPengguna/{idPengguna}")
-    public Map<String, Object> editPengguna(@RequestBody PenggunaDTO penggunaDTO, @PathVariable Long idPengguna){
+    @PostMapping("/editPengguna")
+    public Map<String, Object> editPengguna(@RequestBody PenggunaDTO penggunaDTO, Authentication authentication){
+        Long idPengguna = (Long) authentication.getPrincipal();
         return penggunaService.editPengguna(penggunaDTO, idPengguna);
     }
 }
