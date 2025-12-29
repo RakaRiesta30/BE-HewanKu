@@ -1,5 +1,6 @@
 package com.TuBes.HewanKu.Pengguna;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -9,9 +10,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.TuBes.HewanKu.BaseResponse;
+import com.TuBes.HewanKu.JWTUtil;
 import com.TuBes.HewanKu.KirimEmail;
 import com.TuBes.HewanKu.Shelter.ShelterRepository;
 
+import io.jsonwebtoken.Jwts;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -21,29 +24,29 @@ public class PenggunaService {
     private final BaseResponse res;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final ShelterRepository shelterRepository;
+    private final JWTUtil jwtUtil;
 
     @Autowired
     private KirimEmail mail;
 
     @Autowired
     public PenggunaService(PenggunaRepository penggunaRepository, BaseResponse res,
-            ShelterRepository shelterRepository) {
+            ShelterRepository shelterRepository, JWTUtil jwtUtil) {
         this.penggunaRepository = penggunaRepository;
         this.res = res;
         this.shelterRepository = shelterRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     public Map<String, Object> register(PenggunaDTO penggunaDTO) {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findByEmail(penggunaDTO.getEmail())
                 .ifPresentOrElse(
-                        ada -> response.putAll(
-                                res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
+                        ada -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
                         () -> {
                             penggunaRepository.findByEmail(penggunaDTO.getEmail())
                                     .ifPresentOrElse(
-                                            adaa -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null,
-                                                    "Unauthorized, Akun sudah tersedia")),
+                                            adaa -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null, "Unauthorized, Akun sudah tersedia")),
                                             () -> {
                                                 Pengguna pengguna = new Pengguna(
                                                         penggunaDTO.getEmail(),
@@ -62,7 +65,19 @@ public class PenggunaService {
         penggunaRepository.findByEmail(email)
                 .ifPresentOrElse(pengguna -> {
                     if (passwordEncoder.matches(password, pengguna.getPassword())) {
-                        response.putAll(res.OK("Password benar", pengguna, null));
+                        String token = Jwts.builder()
+                                .setSubject(pengguna.getId().toString()) // id user
+                                .claim("role", "PENGGUNA")
+                                .claim("email", pengguna.getEmail())
+                                .setIssuedAt(new Date())
+                                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 hari
+                                .signWith(jwtUtil.getKey())
+                                .compact();
+                        Map<String, Object> data = new LinkedHashMap<>();
+                        data.put("token", token);
+                        data.put("id", pengguna.getId());
+                        data.put("email", pengguna.getEmail());
+                        response.putAll(res.OK("Password benar", data, null));
                     } else {
                         response.putAll(res.UNAUTHORIZED("Email atau password salah", null,
                                 "Unauthorized, Email atau password salah"));

@@ -16,7 +16,7 @@ public class UlasanController {
     @Autowired
     private UlasanService ulasanService;
 
-    @PostMapping("/{penggunaId}")
+    @PostMapping("/create")
     public Map<String, Object> createUlasan(@RequestBody UlasanDTO ulasanDTO, @PathVariable Long idHewan, Authentication authentication){
         Long idPengguna = (Long) authentication.getPrincipal();
         return ulasanService.createUlasan(ulasanDTO, idHewan, idPengguna);

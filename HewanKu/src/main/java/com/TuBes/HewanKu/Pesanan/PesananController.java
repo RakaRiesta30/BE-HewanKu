@@ -3,12 +3,12 @@ package com.TuBes.HewanKu.Pesanan;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -17,26 +17,33 @@ public class PesananController {
     @Autowired
     private PesananService pesananService;
 
-    @PostMapping("/{idPengguna}/{idHewan}/create")
-    public Map<String, Object> createPesanan(@PathVariable Long idHewan, @PathVariable Long idPengguna){
+    @PostMapping("/{idHewan}/create")
+    public Map<String, Object> createPesanan(@PathVariable Long idHewan, Authentication authentication){
+        Long idPengguna = (Long) authentication.getPrincipal();
         return pesananService.createPesanan(idHewan, idPengguna);
     }
 
-    @GetMapping("/{id}/view")
-    public Map<String, Object> viewPesanan(@PathVariable Long id, @RequestParam String role){
-        if ("pengguna".equals(role)){
-            return pesananService.viewPesananPengguna(id);
-        }
-        return pesananService.viewPesananShelter(id);
+    @GetMapping("/pengguna/view")
+    public Map<String, Object> viewPesananPengguna(Authentication authentication){
+        Long idPengguna = (Long) authentication.getPrincipal();
+        return pesananService.viewPesananPengguna(idPengguna);
     }
 
-    @PostMapping("/{idPengguna}/{id}/fill")
-    public Map<String, Object> isiForm(@RequestBody FormDTO formDTO, @PathVariable Long id, @PathVariable Long idPengguna){
+    @GetMapping("/shelter/view")
+    public Map<String, Object> viewPesananShelter(Authentication authentication){
+        Long idShelter = (Long) authentication.getPrincipal();
+        return pesananService.viewPesananShelter(idShelter);
+    }
+
+    @PostMapping("/{id}/fill")
+    public Map<String, Object> isiForm(@RequestBody FormDTO formDTO, @PathVariable Long id, Authentication authentication){
+        Long idPengguna = (Long) authentication.getPrincipal();
         return pesananService.isiForm(formDTO, id, idPengguna);
     }
 
-    @PostMapping("/{idShelter}/{id}/confirm")
-    public Map<String, Object> confirmForm(@RequestBody PesananDTO pesananDTO, @PathVariable Long id, @PathVariable Long idShelter){
+    @PostMapping("/{id}/confirm")
+    public Map<String, Object> confirmForm(@RequestBody PesananDTO pesananDTO, @PathVariable Long id, Authentication authentication){
+        Long idShelter = (Long) authentication.getPrincipal();
         return pesananService.confirmForm(pesananDTO, id, idShelter);
     }
 }

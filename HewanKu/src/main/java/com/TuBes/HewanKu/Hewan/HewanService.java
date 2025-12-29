@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.TuBes.HewanKu.BaseResponse;
 import com.TuBes.HewanKu.Pengguna.PenggunaRepository;
-import com.TuBes.HewanKu.Shelter.Shelter;
 import com.TuBes.HewanKu.Shelter.ShelterRepository;
 
 import jakarta.transaction.Transactional;
@@ -75,8 +74,8 @@ public class HewanService {
         Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findById(id)
                 .ifPresentOrElse(pengguna -> {
-                    List<Shelter> daftarShelter = shelterRepository.findAll();
-                    response.putAll(res.OK("Shelter ditemukan", daftarShelter, null));
+                    List<Hewan> daftarHewan = hewanRepository.findAll();
+                    response.putAll(res.OK("Shelter ditemukan", daftarHewan, null));
                 }, () -> response.putAll(
                         res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
         return response;

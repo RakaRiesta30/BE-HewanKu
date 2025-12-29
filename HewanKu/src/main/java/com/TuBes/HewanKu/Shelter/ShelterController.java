@@ -22,6 +22,8 @@ public class ShelterController {
     
     @Autowired
     private ShelterService shelterService;
+
+    @Autowired
     private HewanService hewanService;
 
     public ShelterController(ShelterRepository shelterRepository) {
