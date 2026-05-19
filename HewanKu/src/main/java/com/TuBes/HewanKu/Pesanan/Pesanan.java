@@ -23,14 +23,15 @@ import jakarta.persistence.Table;
 @Table(name = "pesanan")
 public class Pesanan implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     Random random = new Random();
     private String kodePemesanan = "#" + String.valueOf(10000000 + random.nextInt(90000000));
     private String status;
+    private String statusPembayaran;
     private LocalDate timeLeft;
-    
-    @OneToOne(mappedBy="pesanan", cascade = CascadeType.ALL)
+
+    @OneToOne(mappedBy = "pesanan", cascade = CascadeType.ALL)
     private Form form;
 
     @ManyToOne
@@ -46,16 +47,18 @@ public class Pesanan implements Serializable {
     @JoinColumn(name = "shelter_id")
     @JsonIgnore
     private Shelter shelter;
-    
+
     public Pesanan() {
     }
 
-    public Pesanan(Form form, Hewan hewan, Pengguna pengguna, String status, LocalDate timeLeft) {
+    public Pesanan(Form form, Hewan hewan, Pengguna pengguna, String status, LocalDate timeLeft,
+            String statusPembayaran) {
         this.form = form;
         this.hewan = hewan;
         this.pengguna = pengguna;
         this.status = status;
         this.timeLeft = timeLeft;
+        this.statusPembayaran = statusPembayaran;
     }
 
     public Long getId() {
@@ -122,5 +125,11 @@ public class Pesanan implements Serializable {
         this.shelter = shelter;
     }
 
+    public String getStatusPembayaran() {
+        return statusPembayaran;
+    }
 
+    public void setStatusPembayaran(String statusPembayaran) {
+        this.statusPembayaran = statusPembayaran;
+    }
 }
