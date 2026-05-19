@@ -26,7 +26,7 @@ public class Pesanan implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     Random random = new Random();
-    private String kodePemesanan = "#" + String.valueOf(10000000 + random.nextInt(90000000));
+    private String kodePemesanan = "HWN-" + String.valueOf(10000000 + random.nextInt(90000000));
     private String status;
     private String statusPembayaran;
     private LocalDate timeLeft;

@@ -14,7 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.TuBes.HewanKu.BaseResponse;
+import com.TuBes.HewanKu.Hewan.Hewan;
 import com.TuBes.HewanKu.Hewan.HewanRepository;
+import com.TuBes.HewanKu.KirimEmailPesan;
 import com.TuBes.HewanKu.Pengguna.PenggunaRepository;
 import com.TuBes.HewanKu.Shelter.ShelterRepository;
 
@@ -31,6 +33,9 @@ public class PesananService {
     private final ShelterRepository shelterRepository;
     private final FormRepository formRepository;
     private final BaseResponse res;
+
+    @Autowired
+    private KirimEmailPesan kirimEmailPesan;
 
     @Value("${midtrans.server.key}")
     private String serverKey;
@@ -57,20 +62,9 @@ public class PesananService {
                                 pesanan.setPengguna(pengguna);
                                 pesanan.setHewan(hewan);
                                 pesanan.setShelter(hewan.getShelter());
-                                pesanan.setStatusPembayaran("pending");
                                 pesananRepository.save(pesanan);
-                                int hargaHewan = (int) Math.round(hewan.getHarga());
-                                try {
-                                    String tokenLinkPembayaran = createSnapToken(pesanan.getKodePemesanan(),
-                                            hargaHewan);
-                                    response.putAll(
-                                            res.CREATED("Pesanan telah terbuat dengan token dan link pembayaran = "
-                                                    + tokenLinkPembayaran, null, null));
-                                } catch (Exception e) {
-                                    response.putAll(
-                                            res.FORBIDDEN("Gagal terhubung ke server pembayaran: ",
-                                                    null, "FORBIDDEN, " + e.getMessage()));
-                                }
+                                response.putAll(
+                                        res.CREATED("Pesanan telah terbuat", null, null));
                             }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null,
                                     "UNAUTHORIZED, Hewan tidak ditemukan")));
                 }, () -> response.putAll(
@@ -83,8 +77,10 @@ public class PesananService {
         penggunaRepository.findById(idPengguna)
                 .ifPresentOrElse(pengguna -> {
                     try {
-                        updatePesanan();
-                        response.putAll(res.OK("Data pesanan diperlihatkan", null, null));
+                        List<Pesanan> pesananBelumDibayar = pesananRepository.findByStatusPembayaran("pending");
+                        System.out.println(pesananBelumDibayar);
+                        updatePesanan(pesananBelumDibayar);
+                        response.putAll(res.OK("Data pesanan diperlihatkan", pengguna.getPesanan(), null));
                     } catch (Exception e) {
                         response.putAll(
                                 res.FORBIDDEN("Gagal memperbarui data pesanan", null, "FORBIDDEN, " + e.getMessage()));
@@ -99,15 +95,17 @@ public class PesananService {
         shelterRepository.findById(idShelter)
                 .ifPresentOrElse(shelter -> {
                     try {
-                        updatePesanan();
+                        List<Pesanan> pesananBelumDibayar = pesananRepository
+                                .findByStatusPembayaranAndShelter("pending", shelter);
+                        updatePesanan(pesananBelumDibayar);
                     } catch (Exception e) {
                         response.putAll(
                                 res.FORBIDDEN("Gagal memperbarui data pesanan", null, "FORBIDDEN, " + e.getMessage()));
                     }
                     Map<String, Object> data = new LinkedHashMap<>();
                     data.put("dataMasuk", pesananRepository.countByStatusIsNull());
-                    data.put("dataTerima", pesananRepository.countByStatus("TERIMA"));
-                    data.put("dataTolak", pesananRepository.countByStatus("TOLAK"));
+                    data.put("dataTerima", pesananRepository.countByStatus("DITERIMA"));
+                    data.put("dataTolak", pesananRepository.countByStatus("DITOLAK"));
                     data.put("dataPesanan", shelter.getPesanan());
                     response.putAll(res.OK("Data pesanan diperlihatkan", data, null));
                 }, () -> response.putAll(
@@ -157,8 +155,30 @@ public class PesananService {
                     pesananRepository.findById(id)
                             .ifPresentOrElse(pesanan -> {
                                 pesanan.setStatus(pesananDTO.getStatus());
+                                if (pesananDTO.getStatus().equals("DITERIMA")) {
+                                    pesanan.setStatusPembayaran("pending");
+                                    Hewan hewan = pesanan.getHewan();
+                                    int hargaHewan = (int) Math.round(hewan.getHarga());
+                                    kirimEmailPesan.sendEmail(pengguna.getEmail(),
+                                            "Pesanan anda diterima silahkan melanjutkan pembayaran",
+                                            "Status Pesanan" + pesanan.getKodePemesanan());
+                                    try {
+                                        String tokenLinkPembayaran = createSnapToken(pesanan.getKodePemesanan(),
+                                                hargaHewan);
+                                        response.putAll(
+                                                res.OK("Pesanan diterima dan pembayaran dibuat dengan token dan link = "
+                                                        + tokenLinkPembayaran, null, null));
+                                    } catch (Exception e) {
+                                        response.putAll(
+                                                res.FORBIDDEN("Gagal terhubung ke server pembayaran: ",
+                                                        null, "FORBIDDEN, " + e.getMessage()));
+                                    }
+                                } else if (pesananDTO.getStatus().equals("DITOLAK")) {
+                                    kirimEmailPesan.sendEmail(pengguna.getEmail(), "Maaf, pesanan anda ditolak",
+                                            "Status Pesanan" + pesanan.getKodePemesanan());
+                                    response.putAll(res.OK("Pesanan ditolak", null, null));
+                                }
                                 pesananRepository.save(pesanan);
-                                response.putAll(res.CREATED("Form telah terisi", null, null));
                             }, () -> response.putAll(res.UNAUTHORIZED("Pesanan tidak ditemukan", null,
                                     "UNAUTHORIZED, Pesanan tidak ditemukan")));
                 }, () -> response.putAll(
@@ -167,6 +187,7 @@ public class PesananService {
     }
 
     public String createSnapToken(String orderId, int grossAmount) throws Exception {
+        System.out.println("DEBUG SERVER KEY: [" + serverKey + "]");
         String authString = serverKey + ":";
         String encodedAuth = Base64.getEncoder().encodeToString(authString.getBytes());
 
@@ -198,29 +219,46 @@ public class PesananService {
 
     public String getTransactionStatus(String orderId) throws Exception {
         String authString = serverKey + ":";
-        String encodedAuth = Base64.getEncoder().encodeToString(authString.getBytes());
+        // Kunci ke UTF-8
+        String encodedAuth = Base64.getEncoder()
+                .encodeToString(authString.getBytes(java.nio.charset.StandardCharsets.UTF_8));
         String url = "https://api.sandbox.midtrans.com/v2/" + orderId + "/status";
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("accept", "application/json")
-                .header("authorization", "Basic " + encodedAuth)
-                .GET() // <-- Perbedaan utamanya di sini
+                .header("Accept", "application/json") // Huruf A besar
+                .header("Authorization", "Basic " + encodedAuth) // Huruf A besar
+                .GET()
                 .build();
+
         HttpResponse<String> response = HttpClient.newHttpClient()
                 .send(request, HttpResponse.BodyHandlers.ofString());
+
         return response.body();
     }
 
-    public void updatePesanan() throws Exception {
-        List<Pesanan> pesananBelumDibayar = pesananRepository.findByStatusPembayaran("pending");
+    public void updatePesanan(List<Pesanan> pesananBelumDibayar) throws Exception {
+        ObjectMapper mapper = new ObjectMapper(); // Bikin objek mapper cukup di luar loop biar hemat memori
+
         for (Pesanan pesanan : pesananBelumDibayar) {
             String fullDataMidtrans = getTransactionStatus(pesanan.getKodePemesanan());
-            ObjectMapper mapper = new ObjectMapper();
+            System.out.println("Cek Midtrans untuk " + pesanan.getKodePemesanan() + " : " + fullDataMidtrans);
+
+            if (fullDataMidtrans == null || fullDataMidtrans.isBlank()) {
+                System.out.println("Balasan kosong! Melewati pesanan " + pesanan.getKodePemesanan());
+                continue;
+            }
+
             @SuppressWarnings("unchecked")
             Map<String, Object> responseMap = mapper.readValue(fullDataMidtrans, Map.class);
-            String newStatusPembayaran = (String) responseMap.get("transaction_status");
-            pesanan.setStatusPembayaran(newStatusPembayaran);
-            pesananRepository.save(pesanan);
+
+            if (responseMap.containsKey("transaction_status")) {
+                String newStatusPembayaran = (String) responseMap.get("transaction_status");
+                pesanan.setStatusPembayaran(newStatusPembayaran);
+                pesananRepository.save(pesanan);
+            } else {
+                System.out.println("Transaksi belum terdaftar di Midtrans: " + pesanan.getKodePemesanan());
+            }
         }
     }
 }
