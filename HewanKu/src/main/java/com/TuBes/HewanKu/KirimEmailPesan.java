@@ -1,28 +1,56 @@
 package com.TuBes.HewanKu;
 
-import org.springframework.stereotype.Service;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
-import com.resend.Resend;
-import com.resend.core.exception.ResendException;
-import com.resend.services.emails.model.CreateEmailOptions;
-import com.resend.services.emails.model.CreateEmailResponse;
+import org.springframework.stereotype.Service;
 
 @Service
 public class KirimEmailPesan {
-    public void sendEmail(String email, String pesan, String subject) {
-        Resend resend = new Resend("re_15g489oV_5NNQEdagQQtriJUEdHJFJG3W");
 
-        CreateEmailOptions params = CreateEmailOptions.builder()
-                .from("onboarding@resend.dev")
-                .to("rakariesta30@gmail.com")
-                .subject(subject)
-                .html(pesan)
-                .build();
+    private final String BREVO_API_KEY = "xkeysib-KODE_RAHASIA_BREVO_KAMU";
+
+    private final String SENDER_EMAIL = "rakariesta30@gmail.com";
+
+    public void sendEmail(String email, String pesan, String subject) {
         try {
-            CreateEmailResponse data = resend.emails().send(params);
-            System.out.println(data.getId());
-        } catch (ResendException e) {
-            e.printStackTrace();
+            String jsonBody = """
+                    {
+                       "sender": {
+                          "name": "HewanKu",
+                          "email": "%s"
+                       },
+                       "to": [
+                          {
+                             "email": "%s"
+                          }
+                       ],
+                       "subject": "%s",
+                       "textContent": "%s"
+                    }
+                    """.formatted(SENDER_EMAIL, email, subject, pesan);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("api-key", BREVO_API_KEY) // Header untuk Brevo
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                System.out.println("Email pesan sukses terkirim via Brevo API ke: " + email);
+            } else {
+                System.out.println("Gagal mengirim pesan dari Brevo: " + response.body());
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error sistem: " + e.getMessage());
         }
     }
 }

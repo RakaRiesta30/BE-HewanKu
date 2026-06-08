@@ -20,9 +20,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
-    public JwtAuthenticationFilter(JWTUtil jwtUtil) {
+    public JwtAuthenticationFilter(JWTUtil jwtUtil, TokenBlacklistRepository tokenBlacklistRepository) {
         this.jwtUtil = jwtUtil;
+        this.tokenBlacklistRepository = tokenBlacklistRepository;
     }
 
     @Override
@@ -32,8 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-        if (path.equals("/shelter/login") || path.equals("/shelter/register") || path.equals("/pengguna/login")
-                || path.equals("/pengguna/register")) {
+        if (path.startsWith("/shelter/auth/") || path.startsWith("/pengguna/auth/")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -50,6 +51,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             token = authHeader.substring("Bearer ".length());
         } else {
             token = authHeader.substring("Access-Token ".length());
+        }
+
+        if (tokenBlacklistRepository.existsByToken(token)) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    "Sesi telah berakhir (Logged Out). Silakan login kembali.");
+            return;
         }
 
         Claims claims = Jwts.parserBuilder()

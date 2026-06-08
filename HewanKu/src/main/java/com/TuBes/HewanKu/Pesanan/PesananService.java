@@ -18,6 +18,7 @@ import com.TuBes.HewanKu.Hewan.Hewan;
 import com.TuBes.HewanKu.Hewan.HewanRepository;
 import com.TuBes.HewanKu.KirimEmailPesan;
 import com.TuBes.HewanKu.Pengguna.PenggunaRepository;
+import com.TuBes.HewanKu.Shelter.Shelter;
 import com.TuBes.HewanKu.Shelter.ShelterRepository;
 
 import jakarta.transaction.Transactional;
@@ -238,7 +239,7 @@ public class PesananService {
     }
 
     public void updatePesanan(List<Pesanan> pesananBelumDibayar) throws Exception {
-        ObjectMapper mapper = new ObjectMapper(); // Bikin objek mapper cukup di luar loop biar hemat memori
+        ObjectMapper mapper = new ObjectMapper();
 
         for (Pesanan pesanan : pesananBelumDibayar) {
             String fullDataMidtrans = getTransactionStatus(pesanan.getKodePemesanan());
@@ -256,6 +257,11 @@ public class PesananService {
                 String newStatusPembayaran = (String) responseMap.get("transaction_status");
                 pesanan.setStatusPembayaran(newStatusPembayaran);
                 pesananRepository.save(pesanan);
+                if (newStatusPembayaran.equals("settlement") || newStatusPembayaran.equals("capture")) {
+                    Shelter shelter = pesanan.getShelter();
+                    shelter.setHewanDibeli(shelter.getHewanDibeli() + 1);
+                    shelterRepository.save(shelter);
+                }
             } else {
                 System.out.println("Transaksi belum terdaftar di Midtrans: " + pesanan.getKodePemesanan());
             }

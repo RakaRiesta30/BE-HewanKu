@@ -1,5 +1,6 @@
 package com.TuBes.HewanKu.Hewan;
 
+import org.springframework.web.multipart.MultipartFile;
 
 public class HewanDTO {
     private String nama;
@@ -8,6 +9,8 @@ public class HewanDTO {
     private String status;
     private int umur;
     private String jenisKelamin;
+    private String nomorTelepon;
+    private MultipartFile Foto;
 
     public int getUmur() {
         return umur;
@@ -55,5 +58,21 @@ public class HewanDTO {
 
     public void setJenisKelamin(String jenisKelamin) {
         this.jenisKelamin = jenisKelamin;
+    }
+
+    public String getNomorTelepon() {
+        return nomorTelepon;
+    }
+
+    public void setNomorTelepon(String nomorTelepon) {
+        this.nomorTelepon = nomorTelepon;
+    }
+
+    public MultipartFile getFoto() {
+        return Foto;
+    }
+
+    public void setFoto(MultipartFile Foto) {
+        this.Foto = Foto;
     }
 }

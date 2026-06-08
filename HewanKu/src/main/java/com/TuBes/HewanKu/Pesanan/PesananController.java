@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,7 +43,7 @@ public class PesananController {
         return pesananService.isiForm(formDTO, id, idPengguna);
     }
 
-    @PostMapping("/{id}/confirm")
+    @PatchMapping("/{id}/confirm")
     public Map<String, Object> confirmForm(@RequestBody PesananDTO pesananDTO, @PathVariable Long id,
             Authentication authentication) {
         Long idShelter = (Long) authentication.getPrincipal();

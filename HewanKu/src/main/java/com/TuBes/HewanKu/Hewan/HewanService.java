@@ -1,15 +1,22 @@
 package com.TuBes.HewanKu.Hewan;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.TuBes.HewanKu.BaseResponse;
+import com.TuBes.HewanKu.FileStorageService;
 import com.TuBes.HewanKu.Pengguna.PenggunaRepository;
+import com.TuBes.HewanKu.Pesanan.Pesanan;
+import com.TuBes.HewanKu.Pesanan.PesananRepository;
+import com.TuBes.HewanKu.Pesanan.PesananService;
 import com.TuBes.HewanKu.Shelter.ShelterRepository;
 
 import jakarta.transaction.Transactional;
@@ -21,6 +28,15 @@ public class HewanService {
     private final ShelterRepository shelterRepository;
     private final PenggunaRepository penggunaRepository;
     private final BaseResponse res;
+
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @Autowired
+    private PesananService pesananService;
+
+    @Autowired
+    private PesananRepository pesananRepository;
 
     @Autowired
     public HewanService(HewanRepository hewanRepository, PenggunaRepository penggunaRepository, BaseResponse res,
@@ -35,20 +51,28 @@ public class HewanService {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(id)
                 .ifPresentOrElse(shelter -> {
-                    Hewan hewan = new Hewan(
-                            hewanDTO.getHarga(),
-                            hewanDTO.getJenis(),
-                            hewanDTO.getNama(),
-                            0.0,
-                            shelter,
-                            hewanDTO.getStatus(),
-                            LocalDate.now(),
-                            hewanDTO.getUmur(),
-                            hewanDTO.getJenisKelamin());
-                    shelter.getDaftarHewan().add(hewan);
-                    hewanRepository.save(hewan);
-                    shelterRepository.save(shelter);
-                    response.putAll(res.CREATED("Hewan telah terdaftar", null, null));
+                    MultipartFile foto = hewanDTO.getFoto();
+                    try {
+                        String urlImage = fileStorageService.uploadFile(foto);
+                        Hewan hewan = new Hewan(
+                                hewanDTO.getHarga(),
+                                hewanDTO.getJenis(),
+                                hewanDTO.getNama(),
+                                0.0,
+                                shelter,
+                                hewanDTO.getStatus(),
+                                LocalDate.now(),
+                                hewanDTO.getUmur(),
+                                hewanDTO.getJenisKelamin(),
+                                hewanDTO.getNomorTelepon(),
+                                urlImage);
+                        shelter.getDaftarHewan().add(hewan);
+                        hewanRepository.save(hewan);
+                        shelterRepository.save(shelter);
+                        response.putAll(res.CREATED("Hewan telah terdaftar", null, null));
+                    } catch (IOException e) {
+                        response.putAll(res.CREATED("Hewan gagal terdaftar", e.getMessage(), null));
+                    }
                 }, () -> response.putAll(
                         res.UNAUTHORIZED("Shelter tidak ditemukan", null, "Unauthorized, Shelter tidak ditemukan ")));
         return response;
@@ -74,7 +98,20 @@ public class HewanService {
         Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findById(id)
                 .ifPresentOrElse(pengguna -> {
-                    List<Hewan> daftarHewan = hewanRepository.findAll();
+                    List<Pesanan> pesananBelumDibayar = pesananRepository.findByStatusPembayaran("pending");
+                    System.out.println(pesananBelumDibayar);
+                    try {
+                        pesananService.updatePesanan(pesananBelumDibayar);
+                    } catch (Exception e) {
+                        res.UNAUTHORIZED("ERROR", e, "ERROR, " + e);
+                    }
+                    List<Hewan> daftarRating = hewanRepository.findAllByOrderByRating();
+                    List<Hewan> hewanUnggulan = shelterRepository.findHewanOrderByShelter();
+                    List<Hewan> hewanRandom = hewanRepository.findAll();
+                    List<Hewan> daftarFavorit = hewanRepository.findAllByOrderByJumlahFavorit();
+                    Collections.shuffle(hewanRandom);
+                    Map<String, Object> daftarHewan = Map.of("hewanUnggulan", hewanUnggulan, "rekomendasiUntukmu",
+                            hewanRandom, "ratingTertinggi", daftarRating, "daftarFavorit", daftarFavorit);
                     response.putAll(res.OK("Shelter ditemukan", daftarHewan, null));
                 }, () -> response.putAll(
                         res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
@@ -142,6 +179,54 @@ public class HewanService {
                     hewanRepository.findById(idHewan)
                             .ifPresentOrElse(hewan -> {
                                 response.putAll(res.OK("Hewan ditemukan", hewan, null));
+                            }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null,
+                                    "Unauthorized, Hewan tidak ditemukan")));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
+        return response;
+    }
+
+    public Map<String, Object> tambahFavorit(Long id, Long idHewan) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        penggunaRepository.findById(id)
+                .ifPresentOrElse(pengguna -> {
+                    hewanRepository.findById(idHewan)
+                            .ifPresentOrElse(hewan -> {
+                                List<Hewan> favList = pengguna.getFavorit();
+                                if (!favList.contains(hewan)) {
+                                    favList.add(hewan);
+                                    pengguna.setFavorit(favList);
+                                    hewan.setJumlahFavorit(hewan.getJumlahFavorit() + 1);
+                                    hewanRepository.save(hewan);
+                                    penggunaRepository.save(pengguna);
+                                    response.putAll(res.OK("Hewan ditambahkan menjadi favorit", null, null));
+                                } else {
+                                    response.putAll(res.FORBIDDEN("Hewan sudah ditambahkan ke favorit", null, null));
+                                }
+                            }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null,
+                                    "Unauthorized, Hewan tidak ditemukan")));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
+        return response;
+    }
+
+    public Map<String, Object> hapusFavorit(Long id, Long idHewan) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        penggunaRepository.findById(id)
+                .ifPresentOrElse(pengguna -> {
+                    hewanRepository.findById(idHewan)
+                            .ifPresentOrElse(hewan -> {
+                                List<Hewan> favList = pengguna.getFavorit();
+                                if (favList.contains(hewan)) {
+                                    favList.remove(hewan);
+                                    pengguna.setFavorit(favList);
+                                    hewan.setJumlahFavorit(hewan.getJumlahFavorit() - 1);
+                                    hewanRepository.save(hewan);
+                                    penggunaRepository.save(pengguna);
+                                    response.putAll(res.OK("Hewan dihapus dari favorit", null, null));
+                                } else {
+                                    response.putAll(res.FORBIDDEN("Hewan tidak menjadi favorit", null, null));
+                                }
                             }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null,
                                     "Unauthorized, Hewan tidak ditemukan")));
                 }, () -> response.putAll(

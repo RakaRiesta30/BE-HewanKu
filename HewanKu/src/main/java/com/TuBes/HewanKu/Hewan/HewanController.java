@@ -18,25 +18,25 @@ public class HewanController {
     private HewanService hewanService;
 
     @GetMapping("/shelter")
-    public Map<String, Object> viewHewanShelter(Authentication authentication){
+    public Map<String, Object> viewHewanShelter(Authentication authentication) {
         Long idShelter = (Long) authentication.getPrincipal();
         return hewanService.viewHewanShelter(idShelter);
     }
 
     @GetMapping("/pengguna")
-    public Map<String, Object> viewHewanPengguna(Authentication authentication){
+    public Map<String, Object> viewHewanPengguna(Authentication authentication) {
         Long idPengguna = (Long) authentication.getPrincipal();
         return hewanService.viewHewanPengguna(idPengguna);
     }
 
     @GetMapping("/filter")
-    public Map<String, Object> filterHewan(Authentication authentication,@RequestBody FilterDTO filterDTO){
+    public Map<String, Object> filterHewan(Authentication authentication, @RequestBody FilterDTO filterDTO) {
         Long idPengguna = (Long) authentication.getPrincipal();
         return hewanService.filterHewan(idPengguna, filterDTO);
     }
 
     @GetMapping("/{idHewan}")
-    public Map<String, Object> detailHewan(Authentication authentication, @PathVariable Long idHewan){
+    public Map<String, Object> detailHewan(Authentication authentication, @PathVariable Long idHewan) {
         Long idPengguna = (Long) authentication.getPrincipal();
         return hewanService.detailHewan(idPengguna, idHewan);
     }

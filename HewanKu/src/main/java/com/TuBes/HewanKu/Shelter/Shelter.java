@@ -23,22 +23,25 @@ public class Shelter implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nama;
+    private String namaDepan;
+    private String namaBelakang;
     private String noTelepon;
     private String email;
     private boolean status_shelter = false;
     @JsonIgnore
     private String password;
     private String otp;
-    
+    private int hewanDibeli;
+
     @OneToMany(mappedBy = "shelter")
     @JsonIgnore
     private List<Hewan> daftarHewan;
-    
+
     @OneToMany(mappedBy = "shelter")
     @JsonIgnore
     private List<Pesanan> pesanan;
 
-    @OneToOne(mappedBy="shelter", cascade=CascadeType.ALL)
+    @OneToOne(mappedBy = "shelter", cascade = CascadeType.ALL)
     private ShelterAcc shelterAcc;
 
     public ShelterAcc getShelterAcc() {
@@ -52,9 +55,10 @@ public class Shelter implements Serializable {
     public Shelter() {
     }
 
-    public Shelter(String email, String nama, String noTelepon, String password) {
+    public Shelter(String email, String namaDepan, String namaBelakang, String noTelepon, String password) {
         this.email = email;
-        this.nama = nama;
+        this.namaDepan = namaDepan;
+        this.namaBelakang = namaBelakang;
         this.noTelepon = noTelepon;
         this.password = password;
     }
@@ -65,14 +69,6 @@ public class Shelter implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getNama() {
-        return nama;
-    }
-
-    public void setNama(String nama) {
-        this.nama = nama;
     }
 
     public String getNoTelepon() {
@@ -129,5 +125,37 @@ public class Shelter implements Serializable {
 
     public void setStatusShelter(boolean status_shelter) {
         this.status_shelter = status_shelter;
+    }
+
+    public int getHewanDibeli() {
+        return hewanDibeli;
+    }
+
+    public void setHewanDibeli(int hewanDibeli) {
+        this.hewanDibeli = hewanDibeli;
+    }
+
+    public String getNamaDepan() {
+        return namaDepan;
+    }
+
+    public void setNamaDepan(String namaDepan) {
+        this.namaDepan = namaDepan;
+    }
+
+    public String getNamaBelakang() {
+        return namaBelakang;
+    }
+
+    public void setNamaBelakang(String namaBelakang) {
+        this.namaBelakang = namaBelakang;
+    }
+
+    public String getNama() {
+        return nama;
+    }
+
+    public void setNama(String nama) {
+        this.nama = nama;
     }
 }

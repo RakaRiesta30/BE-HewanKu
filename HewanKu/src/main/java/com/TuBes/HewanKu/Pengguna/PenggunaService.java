@@ -3,6 +3,7 @@ package com.TuBes.HewanKu.Pengguna;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,8 +14,11 @@ import com.TuBes.HewanKu.BaseResponse;
 import com.TuBes.HewanKu.JWTUtil;
 import com.TuBes.HewanKu.KirimEmail;
 import com.TuBes.HewanKu.Shelter.ShelterRepository;
+import com.TuBes.HewanKu.TokenBlacklist;
+import com.TuBes.HewanKu.TokenBlacklistRepository;
 
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -28,6 +32,9 @@ public class PenggunaService {
 
     @Autowired
     private KirimEmail mail;
+
+    @Autowired
+    private TokenBlacklistRepository tokenBlacklistRepository;
 
     @Autowired
     public PenggunaService(PenggunaRepository penggunaRepository, BaseResponse res,
@@ -51,12 +58,22 @@ public class PenggunaService {
                                                     "Unauthorized, Akun sudah tersedia")),
                                             () -> {
                                                 Pengguna pengguna = new Pengguna(
-                                                        penggunaDTO.getEmail(),
-                                                        penggunaDTO.getNama(),
+                                                        penggunaDTO.getNamaDepan(),
+                                                        penggunaDTO.getNamaBelakang(),
                                                         penggunaDTO.getNoTelepon(),
+                                                        penggunaDTO.getEmail(),
                                                         passwordEncoder.encode(penggunaDTO.getPassword()));
-                                                penggunaRepository.save(pengguna);
-                                                response.putAll(res.CREATED("Akun telah terbuat", null, null));
+                                                pengguna.setDisplayName(penggunaDTO.getNamaDepan() + " "
+                                                        + penggunaDTO.getNamaBelakang());
+                                                if (Objects.equals(penggunaDTO.getConfirmPassword(),
+                                                        penggunaDTO.getPassword())) {
+                                                    penggunaRepository.save(pengguna);
+                                                    response.putAll(res.CREATED("Akun telah terbuat", null, null));
+                                                } else {
+                                                    response.putAll(
+                                                            res.FORBIDDEN("Konfirmasi password salah atau belum diisi",
+                                                                    null, null));
+                                                }
                                             });
                         });
         return response;
@@ -93,12 +110,13 @@ public class PenggunaService {
         Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findByEmail(email)
                 .ifPresentOrElse(pengguna -> {
-                    pengguna.setOtp(mail.sendEmail(email));
+                    String otp = (mail.sendEmail(email));
+                    pengguna.setOtp(otp);
                     penggunaRepository.save(pengguna);
-                    if (!pengguna.getOtp().equals("Salah")) {
-                        response.putAll(res.OK("Kode berhasil dikirim", null, null));
+                    if (otp.length() == 6) {
+                        response.putAll(res.OK("Kode berhasil dikirim", otp, null));
                     } else {
-                        response.putAll(res.UNAUTHORIZED("Error", null, "Unauthorized, Error"));
+                        response.putAll(res.UNAUTHORIZED("Error", otp, "Unauthorized, Error"));
                     }
                 }, () -> response.putAll(
                         res.UNAUTHORIZED("Email tidak ditemukan", null, "Unauthorized, Email tidak ditemukan")));
@@ -112,7 +130,6 @@ public class PenggunaService {
                     if (otp.equals("Salah")) {
                         response.putAll(res.UNAUTHORIZED("OTP Salah", null, "Unauthorized, OTP Salah"));
                     } else if (otp.equals(pengguna.getOtp())) {
-                        response.putAll(res.OK("OTP benar", null, null));
                         response.putAll(res.OK("OTP benar", null, null));
                     } else {
                         response.putAll(res.UNAUTHORIZED("OTP Salah", null, "Unauthorized, OTP Salah"));
@@ -142,11 +159,46 @@ public class PenggunaService {
         Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findById(id)
                 .ifPresentOrElse(pengguna -> {
-                    pengguna.setNama(penggunaDTO.getNama());
+                    pengguna.setDisplayName(penggunaDTO.getDisplayName());
+                    pengguna.setUsername(penggunaDTO.getUsername());
                     pengguna.setEmail(penggunaDTO.getEmail());
                     pengguna.setNoTelepon(penggunaDTO.getNoTelepon());
+                    pengguna.setNegaraDaerah(penggunaDTO.getNegaraDaerah());
+                    pengguna.setJalan(penggunaDTO.getJalan());
+                    pengguna.setZipCode(penggunaDTO.getZipCode());
                     penggunaRepository.save(pengguna);
                     response.putAll(res.OK("Akun pengguna telah diubah", null, null));
+                }, () -> response
+                        .putAll(res.UNAUTHORIZED("Akun tidak ditemukan", null, "UNAUTHORIZED, Akun tidak ditemukan")));
+        return response;
+    }
+
+    public Map<String, Object> viewPengguna(Long id) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        penggunaRepository.findById(id)
+                .ifPresentOrElse(pengguna -> {
+                    response.putAll(res.OK("Pengguna ditemukan", pengguna, null));
+                }, () -> response
+                        .putAll(res.UNAUTHORIZED("Akun tidak ditemukan", null, "UNAUTHORIZED, Akun tidak ditemukan")));
+        return response;
+    }
+
+    public Map<String, Object> logout(HttpServletRequest request, Long id) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        String headerAuth = request.getHeader("Authorization");
+        penggunaRepository.findById(id)
+                .ifPresentOrElse(pengguna -> {
+                    if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+                        String token = headerAuth.substring(7);
+
+                        TokenBlacklist tokenMasukDaftarHitam = new TokenBlacklist();
+                        tokenMasukDaftarHitam.setToken(token);
+                        tokenBlacklistRepository.save(tokenMasukDaftarHitam);
+
+                        response.putAll(res.OK("Berhasil logout", null, null));
+                    } else {
+                        response.putAll(res.UNAUTHORIZED("Gagal logout", null, null));
+                    }
                 }, () -> response
                         .putAll(res.UNAUTHORIZED("Akun tidak ditemukan", null, "UNAUTHORIZED, Akun tidak ditemukan")));
         return response;

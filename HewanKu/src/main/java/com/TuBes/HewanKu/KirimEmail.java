@@ -1,64 +1,69 @@
 package com.TuBes.HewanKu;
 
-import java.util.Properties;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import jakarta.mail.Authenticator;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class KirimEmail {
+    @Value("${sendinblue.api.key}")
+    private String apiKey;
+    private final String BREVO_API_KEY = "xkeysib-" + apiKey;
+
+    private final String SENDER_EMAIL = "rakariesta30@gmail.com";
+
     public String sendEmail(String email) {
         Random random = new Random();
         String otp = String.valueOf(100000 + random.nextInt(900000));
-        String recipient = email;
-
-        String sender = "rakariesta30@gmail.com";
-
-        String host = "smtp.gmail.com";
-
-        Properties properties = System.getProperties();
-
-        properties.put("mail.smtp.host", host);
-
-        properties.put("mail.smtp.port", "587");
-
-        properties.put("mail.smtp.auth", "true");
-
-        properties.put("mail.smtp.starttls.enable", "true");
-
-        Session session = Session.getInstance(properties, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(sender, "uvdr tzjh zfih lsdq");
-            }
-        });
 
         try {
-            MimeMessage message = new MimeMessage(session);
+            String jsonBody = """
+                    {
+                       "sender": {
+                          "name": "HewanKu",
+                          "email": "%s"
+                       },
+                       "to": [
+                          {
+                             "email": "%s"
+                          }
+                       ],
+                       "subject": "%s",
+                       "textContent": "%s"
+                    }
+                    """.formatted(
+                    SENDER_EMAIL,
+                    email,
+                    "Kode OTP HewanKu",
+                    "Gunakan kode OTP ini, jangan bagikan kode OTP ini ke siapa-siapa = " + otp);
 
-            message.setFrom(new InternetAddress(sender));
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("api-key", BREVO_API_KEY)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
 
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
 
-            message.setSubject("Kode OTP");
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                System.out.println("Email sukses terkirim via Brevo API ke: " + email);
+                return otp;
+            } else {
+                System.out.println("Gagal: " + response.body());
+                return response.body();
+            }
 
-            message.setText("Gunakan kode OTP ini, jangan bagian kode OTP ini ke siapa - siapa = " + otp);
-
-            Transport.send(message);
-            System.out.println("Mail successfully sent");
-            return otp;
-        } catch (MessagingException mex) {
-            System.out.println("Gagal mengirim email: " + mex.getMessage());
-            return "Salah";
+        } catch (Exception e) {
+            System.out.println("Error sistem: " + e.getMessage());
+            return e.getMessage();
         }
     }
 }

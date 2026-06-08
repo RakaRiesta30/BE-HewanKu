@@ -2,19 +2,14 @@ package com.TuBes.HewanKu.Shelter;
 
 public class ShelterDTO {
     private String nama;
+    private String namaDepan;
+    private String namaBelakang;
     private String noTelepon;
     private String email;
     private String password;
     private String otp;
     private String repassword;
-
-    public String getNama() {
-        return nama;
-    }
-
-    public void setNama(String nama) {
-        this.nama = nama;
-    }
+    private String confirmPassword;
 
     public String getNoTelepon() {
         return noTelepon;
@@ -54,6 +49,38 @@ public class ShelterDTO {
 
     public void setOtp(String otp) {
         this.otp = otp;
+    }
+
+    public String getNamaBelakang() {
+        return namaBelakang;
+    }
+
+    public void setNamaBelakang(String namaBelakang) {
+        this.namaBelakang = namaBelakang;
+    }
+
+    public String getNamaDepan() {
+        return namaDepan;
+    }
+
+    public void setNamaDepan(String namaDepan) {
+        this.namaDepan = namaDepan;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    public String getNama() {
+        return nama;
+    }
+
+    public void setNama(String nama) {
+        this.nama = nama;
     }
 
 }

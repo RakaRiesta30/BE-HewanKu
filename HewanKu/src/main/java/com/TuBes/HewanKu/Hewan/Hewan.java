@@ -22,33 +22,37 @@ import jakarta.persistence.Table;
 @Table(name = "hewan")
 public class Hewan implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nama;
     private String jenis;
     private double harga;
     private String status;
     private int umur;
+    private String nomorTelepon;
     private String jenisKelamin;
     private LocalDate updatedDate;
+    private String urlFoto;
     private double rating;
+    private int jumlahFavorit;
 
     @ManyToOne
     @JoinColumn(name = "shelter_id")
     private Shelter shelter;
 
-    @OneToMany(mappedBy="hewan")
+    @OneToMany(mappedBy = "hewan")
     @JsonIgnore
     private List<Ulasan> ulasan;
 
-    @OneToMany(mappedBy="hewan")
+    @OneToMany(mappedBy = "hewan")
     @JsonIgnore
     private List<Pesanan> pesanan;
 
     public Hewan() {
     }
 
-    public Hewan(double harga, String jenis, String nama, double rating, Shelter shelter, String status, LocalDate updatedDate, int umur, String jenisKelamin) {
+    public Hewan(double harga, String jenis, String nama, double rating, Shelter shelter, String status,
+            LocalDate updatedDate, int umur, String jenisKelamin, String nomorTelepon, String urlFoto) {
         this.harga = harga;
         this.jenis = jenis;
         this.nama = nama;
@@ -58,6 +62,8 @@ public class Hewan implements Serializable {
         this.updatedDate = updatedDate;
         this.umur = umur;
         this.jenisKelamin = jenisKelamin;
+        this.nomorTelepon = nomorTelepon;
+        this.urlFoto = urlFoto;
     }
 
     public Long getId() {
@@ -154,5 +160,29 @@ public class Hewan implements Serializable {
 
     public void setJenisKelamin(String jenisKelamin) {
         this.jenisKelamin = jenisKelamin;
+    }
+
+    public int getJumlahFavorit() {
+        return jumlahFavorit;
+    }
+
+    public void setJumlahFavorit(int jumlahFavorit) {
+        this.jumlahFavorit = jumlahFavorit;
+    }
+
+    public String getNomorTelepon() {
+        return nomorTelepon;
+    }
+
+    public void setNomorTelepon(String nomorTelepon) {
+        this.nomorTelepon = nomorTelepon;
+    }
+
+    public String getUrlFoto() {
+        return urlFoto;
+    }
+
+    public void setUrlFoto(String urlFoto) {
+        this.urlFoto = urlFoto;
     }
 }
