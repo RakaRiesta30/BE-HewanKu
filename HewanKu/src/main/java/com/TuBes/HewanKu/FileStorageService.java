@@ -21,9 +21,9 @@ public class FileStorageService {
             @Value("${cloudinary.api_secret}") String apiSecret) {
 
         this.cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", cloudName,
-                "api_key", apiKey,
-                "api_secret", apiSecret));
+                "cloud_name", "dywkgvgpc",
+                "api_key", "998811245393483",
+                "api_secret", "exR23a5flrA4b83xzH-0WOLtJLQ"));
     }
 
     public String uploadFile(MultipartFile file) throws IOException {

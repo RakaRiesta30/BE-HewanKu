@@ -3,9 +3,11 @@ package com.TuBes.HewanKu.Shelter;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -96,8 +98,8 @@ public class ShelterController {
         return hewanService.createHewan(hewanDTO, idShelter);
     }
 
-    @PutMapping("/edit/{idHewan}")
-    public Map<String, Object> editHewan(@RequestBody HewanDTO hewanDTO, Authentication authentication,
+    @PutMapping(value = "/edit/{idHewan}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String, Object> editHewan(@ModelAttribute HewanDTO hewanDTO, Authentication authentication,
             @PathVariable Long idHewan) {
         Long idShelter = (Long) authentication.getPrincipal();
         return hewanService.editHewan(hewanDTO, idShelter, idHewan);

@@ -7,13 +7,17 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HewanRepository extends JpaRepository<Hewan, Long> {
-    List<Hewan> getReferenceByJenisAndHargaBetween(String jenis, double hargaMin, double hargaMax);
+    List<Hewan> findByJenisAndHargaBetween(String jenis, Double hargaMin, Double hargaMax);
+
+    List<Hewan> findByJenis(String jenis);
+
+    List<Hewan> findByHargaBetween(Double hargaMin, Double hargaMax);
 
     Long findShelter_IdById(Long id);
 
     long countByShelter_Id(Long shelterId);
 
-    List<Hewan> findAllByOrderByRating();
+    List<Hewan> findAllByOrderByRatingDesc();
 
-    List<Hewan> findAllByOrderByJumlahFavorit();
+    List<Hewan> findAllByOrderByJumlahFavoritDesc();
 }

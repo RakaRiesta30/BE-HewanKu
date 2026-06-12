@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class KirimEmail {
-    @Value("${sendinblue.api.key}")
+    @Value("${SENDINBLUE_API_KEY}")
     private String apiKey;
-    private final String BREVO_API_KEY = "xkeysib-" + apiKey;
+    private final String BREVO_API_KEY = apiKey;
 
     private final String SENDER_EMAIL = "rakariesta30@gmail.com";
 

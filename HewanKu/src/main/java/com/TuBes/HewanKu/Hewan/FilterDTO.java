@@ -1,5 +1,12 @@
 package com.TuBes.HewanKu.Hewan;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class FilterDTO {
     private String jenis;
     private double hargaMin;

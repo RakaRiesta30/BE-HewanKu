@@ -2,7 +2,9 @@ package com.TuBes.HewanKu.Hewan;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,13 +107,20 @@ public class HewanService {
                     } catch (Exception e) {
                         res.UNAUTHORIZED("ERROR", e, "ERROR, " + e);
                     }
-                    List<Hewan> daftarRating = hewanRepository.findAllByOrderByRating();
+                    List<Hewan> daftarRating = hewanRepository.findAllByOrderByRatingDesc();
                     List<Hewan> hewanUnggulan = shelterRepository.findHewanOrderByShelter();
                     List<Hewan> hewanRandom = hewanRepository.findAll();
-                    List<Hewan> daftarFavorit = hewanRepository.findAllByOrderByJumlahFavorit();
+                    List<Hewan> daftarFavorit = pengguna.getFavorit();
+                    if (daftarFavorit == null) {
+                        daftarFavorit = new ArrayList<>();
+                    }
                     Collections.shuffle(hewanRandom);
-                    Map<String, Object> daftarHewan = Map.of("hewanUnggulan", hewanUnggulan, "rekomendasiUntukmu",
-                            hewanRandom, "ratingTertinggi", daftarRating, "daftarFavorit", daftarFavorit);
+                    Map<String, Object> daftarHewan = new HashMap<>();
+                    daftarHewan.put("hewanUnggulan", hewanUnggulan != null ? hewanUnggulan : new ArrayList<>());
+                    daftarHewan.put("rekomendasiUntukmu", hewanRandom);
+                    daftarHewan.put("ratingTertinggi", daftarRating);
+                    daftarHewan.put("daftarFavorit", daftarFavorit);
+
                     response.putAll(res.OK("Shelter ditemukan", daftarHewan, null));
                 }, () -> response.putAll(
                         res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
@@ -124,6 +133,16 @@ public class HewanService {
                 .ifPresentOrElse(shelter -> {
                     hewanRepository.findById(idHewan)
                             .ifPresentOrElse(hewan -> {
+                                try {
+                                    MultipartFile foto = hewanDTO.getFoto();
+                                    if (foto != null && !foto.isEmpty()) {
+                                        String urlImage = fileStorageService.uploadFile(foto);
+                                        hewan.setUrlFoto(urlImage);
+                                    }
+                                } catch (IOException e) {
+                                    response.putAll(res.FORBIDDEN("Gagal mengunggah foto", e.getMessage(), null));
+                                }
+                                hewan.setNomorTelepon(hewanDTO.getNomorTelepon());
                                 hewan.setHarga(hewanDTO.getHarga());
                                 hewan.setJenis(hewanDTO.getJenis());
                                 hewan.setNama(hewanDTO.getNama());
@@ -164,8 +183,21 @@ public class HewanService {
         Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findById(id)
                 .ifPresentOrElse(pengguna -> {
-                    List<Hewan> hewanList = hewanRepository.getReferenceByJenisAndHargaBetween(filterDTO.getJenis(),
-                            filterDTO.getHargaMin(), filterDTO.getHargaMax());
+                    List<Hewan> hewanList = new ArrayList<>();
+                    if (filterDTO.getJenis() != null && filterDTO.getHargaMin() != -1
+                            && filterDTO.getHargaMax() != -1) {
+                        hewanList = hewanRepository.findByJenisAndHargaBetween(filterDTO.getJenis(),
+                                filterDTO.getHargaMin(), filterDTO.getHargaMax());
+                    } else if (filterDTO.getJenis() != null && filterDTO.getHargaMin() == -1
+                            && filterDTO.getHargaMax() == -1) {
+                        hewanList = hewanRepository.findByJenis(filterDTO.getJenis());
+                    } else if (filterDTO.getHargaMin() != -1 && filterDTO.getHargaMax() != -1
+                            && filterDTO.getJenis() == null) {
+                        hewanList = hewanRepository.findByHargaBetween(filterDTO.getHargaMin(),
+                                filterDTO.getHargaMax());
+                    } else {
+                        hewanList = hewanRepository.findAll();
+                    }
                     response.putAll(res.OK("Hewan telah difilter", hewanList, null));
                 }, () -> response.putAll(
                         res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
@@ -193,6 +225,9 @@ public class HewanService {
                     hewanRepository.findById(idHewan)
                             .ifPresentOrElse(hewan -> {
                                 List<Hewan> favList = pengguna.getFavorit();
+                                if (favList == null) {
+                                    favList = new ArrayList<>();
+                                }
                                 if (!favList.contains(hewan)) {
                                     favList.add(hewan);
                                     pengguna.setFavorit(favList);
@@ -217,6 +252,9 @@ public class HewanService {
                     hewanRepository.findById(idHewan)
                             .ifPresentOrElse(hewan -> {
                                 List<Hewan> favList = pengguna.getFavorit();
+                                if (favList == null) {
+                                    favList = new ArrayList<>();
+                                }
                                 if (favList.contains(hewan)) {
                                     favList.remove(hewan);
                                     pengguna.setFavorit(favList);

@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class HewanDTO {
     private String nama;
     private String jenis;
-    private double harga;
+    private Double harga;
     private String status;
     private int umur;
     private String jenisKelamin;
@@ -44,11 +44,11 @@ public class HewanDTO {
         this.status = status;
     }
 
-    public double getHarga() {
+    public Double getHarga() {
         return harga;
     }
 
-    public void setHarga(double harga) {
+    public void setHarga(Double harga) {
         this.harga = harga;
     }
 
