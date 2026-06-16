@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.modelmapper.Conditions;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,32 +51,38 @@ public class HewanService {
         this.shelterRepository = shelterRepository;
     }
 
-    public Map<String, Object> createHewan(HewanDTO hewanDTO, Long id) {
+    public Map<String, Object> createHewan(HewanDTO hewanDTO, Long id, MultipartFile file) {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(id)
                 .ifPresentOrElse(shelter -> {
-                    MultipartFile foto = hewanDTO.getFoto();
-                    try {
-                        String urlImage = fileStorageService.uploadFile(foto);
-                        Hewan hewan = new Hewan(
-                                hewanDTO.getHarga(),
-                                hewanDTO.getJenis(),
-                                hewanDTO.getNama(),
-                                0.0,
-                                shelter,
-                                hewanDTO.getStatus(),
-                                LocalDate.now(),
-                                hewanDTO.getUmur(),
-                                hewanDTO.getJenisKelamin(),
-                                hewanDTO.getNomorTelepon(),
-                                urlImage);
-                        shelter.getDaftarHewan().add(hewan);
-                        hewanRepository.save(hewan);
-                        shelterRepository.save(shelter);
-                        response.putAll(res.CREATED("Hewan telah terdaftar", null, null));
-                    } catch (IOException e) {
-                        response.putAll(res.CREATED("Hewan gagal terdaftar", e.getMessage(), null));
+                    if (file != null && !file.isEmpty()) {
+                        try {
+                            String fileName = fileStorageService.uploadFile(file);
+                            hewanDTO.setUrlFoto(fileName);
+                        } catch (IOException e) {
+                            response.putAll(res.UNAUTHORIZED("URL logo tidak valid", null,
+                                    "UNAUTHORIZED, URL logo tidak valid"));
+                            return;
+                        }
+                    } else {
+                        hewanDTO.setUrlFoto(null);
                     }
+                    Hewan hewan = new Hewan(
+                            hewanDTO.getHarga(),
+                            hewanDTO.getJenis(),
+                            hewanDTO.getNama(),
+                            0.0,
+                            shelter,
+                            hewanDTO.getStatus(),
+                            LocalDate.now(),
+                            hewanDTO.getUmur(),
+                            hewanDTO.getJenisKelamin(),
+                            hewanDTO.getNomorTelepon(),
+                            hewanDTO.getUrlFoto());
+                    shelter.getDaftarHewan().add(hewan);
+                    hewanRepository.save(hewan);
+                    shelterRepository.save(shelter);
+                    response.putAll(res.CREATED("Hewan telah terdaftar", null, null));
                 }, () -> response.putAll(
                         res.UNAUTHORIZED("Shelter tidak ditemukan", null, "Unauthorized, Shelter tidak ditemukan ")));
         return response;
@@ -127,30 +135,27 @@ public class HewanService {
         return response;
     }
 
-    public Map<String, Object> editHewan(HewanDTO hewanDTO, Long id, Long idHewan) {
+    public Map<String, Object> editHewan(HewanDTO hewanDTO, Long id, Long idHewan, MultipartFile file) {
         Map<String, Object> response = new LinkedHashMap<>();
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         shelterRepository.findById(id)
                 .ifPresentOrElse(shelter -> {
                     hewanRepository.findById(idHewan)
                             .ifPresentOrElse(hewan -> {
-                                try {
-                                    MultipartFile foto = hewanDTO.getFoto();
-                                    if (foto != null && !foto.isEmpty()) {
-                                        String urlImage = fileStorageService.uploadFile(foto);
-                                        hewan.setUrlFoto(urlImage);
+                                if (file != null && !file.isEmpty()) {
+                                    try {
+                                        String fileName = fileStorageService.uploadFile(file);
+                                        hewanDTO.setUrlFoto(fileName);
+                                    } catch (IOException e) {
+                                        response.putAll(res.UNAUTHORIZED("URL logo tidak valid", null,
+                                                "UNAUTHORIZED, URL logo tidak valid"));
+                                        return;
                                     }
-                                } catch (IOException e) {
-                                    response.putAll(res.FORBIDDEN("Gagal mengunggah foto", e.getMessage(), null));
+                                } else {
+                                    hewanDTO.setUrlFoto(hewanDTO.getUrlFoto());
                                 }
-                                hewan.setNomorTelepon(hewanDTO.getNomorTelepon());
-                                hewan.setHarga(hewanDTO.getHarga());
-                                hewan.setJenis(hewanDTO.getJenis());
-                                hewan.setNama(hewanDTO.getNama());
-                                hewan.setStatus(hewanDTO.getStatus());
-                                hewan.setUpdatedDate(LocalDate.now());
-                                hewan.setShelter(shelter);
-                                hewan.setUmur(hewanDTO.getUmur());
-                                hewan.setJenisKelamin(hewanDTO.getJenisKelamin());
+                                mapper.map(hewan, hewanDTO);
                                 hewanRepository.save(hewan);
                                 response.putAll(res.OK("Hewan telah diubah", null, null));
                             }, () -> {
@@ -206,15 +211,11 @@ public class HewanService {
 
     public Map<String, Object> detailHewan(Long id, Long idHewan) {
         Map<String, Object> response = new LinkedHashMap<>();
-        penggunaRepository.findById(id)
-                .ifPresentOrElse(pengguna -> {
-                    hewanRepository.findById(idHewan)
-                            .ifPresentOrElse(hewan -> {
-                                response.putAll(res.OK("Hewan ditemukan", hewan, null));
-                            }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null,
-                                    "Unauthorized, Hewan tidak ditemukan")));
-                }, () -> response.putAll(
-                        res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "Unauthorized, Pengguna tidak ditemukan ")));
+        hewanRepository.findById(idHewan)
+                .ifPresentOrElse(hewan -> {
+                    response.putAll(res.OK("Hewan ditemukan", hewan, null));
+                }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null,
+                        "Unauthorized, Hewan tidak ditemukan")));
         return response;
     }
 
@@ -255,16 +256,21 @@ public class HewanService {
                                 if (favList == null) {
                                     favList = new ArrayList<>();
                                 }
-                                if (favList.contains(hewan)) {
-                                    favList.remove(hewan);
-                                    pengguna.setFavorit(favList);
-                                    hewan.setJumlahFavorit(hewan.getJumlahFavorit() - 1);
-                                    hewanRepository.save(hewan);
-                                    penggunaRepository.save(pengguna);
-                                    response.putAll(res.OK("Hewan dihapus dari favorit", null, null));
-                                } else {
-                                    response.putAll(res.FORBIDDEN("Hewan tidak menjadi favorit", null, null));
+                                for (Hewan h : favList) {
+                                    if (h.getId().equals(idHewan)) {
+                                        favList.remove(h);
+                                        break;
+                                    } else {
+                                        response.putAll(res.FORBIDDEN("Hewan tidak menjadi favorit", null, null));
+                                        return;
+                                    }
                                 }
+                                pengguna.setFavorit(favList);
+                                hewan.setJumlahFavorit(hewan.getJumlahFavorit() - 1);
+                                hewanRepository.save(hewan);
+                                penggunaRepository.save(pengguna);
+                                response.putAll(res.OK("Hewan dihapus dari favorit", null, null));
+                                response.putAll(res.FORBIDDEN("Hewan tidak menjadi favorit", null, null));
                             }, () -> response.putAll(res.UNAUTHORIZED("Hewan tidak ditemukan", null,
                                     "Unauthorized, Hewan tidak ditemukan")));
                 }, () -> response.putAll(

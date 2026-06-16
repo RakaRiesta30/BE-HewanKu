@@ -1,15 +1,21 @@
 package com.TuBes.HewanKu.Shelter;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
+import org.modelmapper.Conditions;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.TuBes.HewanKu.BaseResponse;
+import com.TuBes.HewanKu.FileStorageService;
 import com.TuBes.HewanKu.JWTUtil;
 import com.TuBes.HewanKu.KirimEmail;
 import com.TuBes.HewanKu.TokenBlacklist;
@@ -35,6 +41,9 @@ public class ShelterService {
     private TokenBlacklistRepository tokenBlacklistRepository;
 
     @Autowired
+    private FileStorageService fileStorageService;
+
+    @Autowired
     public ShelterService(ShelterRepository shelterRepository, BaseResponse res,
             ShelterAccRepository shelterAccRepository, JWTUtil jwtUtil) {
         this.shelterRepository = shelterRepository;
@@ -55,13 +64,17 @@ public class ShelterService {
                                             adaa -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null,
                                                     "Unauthorized, Akun sudah tersedia")),
                                             () -> {
-                                                if (shelterDTO.getConfirmPassword().equals(shelterDTO.getPassword())) {
+                                                if (Objects.equals(shelterDTO.getPassword(),
+                                                        shelterDTO.getConfirmPassword())) {
                                                     Shelter shelter = new Shelter(
                                                             shelterDTO.getEmail(),
                                                             shelterDTO.getNamaDepan(),
                                                             shelterDTO.getNamaBelakang(),
                                                             shelterDTO.getNoTelepon(),
                                                             passwordEncoder.encode(shelterDTO.getPassword()));
+                                                    shelter.setDisplayName(shelterDTO.getNamaDepan() + " "
+                                                            + shelterDTO.getNamaBelakang());
+                                                    shelter.setKeyRole(shelterDTO.getKeyRole());
                                                     shelterRepository.save(shelter);
                                                     response.putAll(res.CREATED("Akun telah terbuat", null, null));
                                                 } else {
@@ -81,7 +94,7 @@ public class ShelterService {
                     if (passwordEncoder.matches(password, shelter.getPassword())) {
                         String token = Jwts.builder()
                                 .setSubject(shelter.getId().toString()) // id user
-                                .claim("role", "SHELTER")
+                                .claim("role", shelter.getKeyRole())
                                 .claim("email", shelter.getEmail())
                                 .setIssuedAt(new Date())
                                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 hari
@@ -151,39 +164,54 @@ public class ShelterService {
         return response;
     }
 
-    public Map<String, Object> createShelter(ShelterAccDTO shelterAccDTO, Long id) {
+    public Map<String, Object> createShelter(ShelterAccDTO shelterAccDTO, Long id, MultipartFile file) {
         Map<String, Object> response = new LinkedHashMap<>();
-        shelterAccRepository.findByShelter_Id(id)
-                .ifPresentOrElse(
-                        shelterAcc -> response.putAll(res.UNAUTHORIZED("Akun sudah membuat shelter", null,
-                                "UNAUTHORIZED, Akun sudah membuat shelter")),
-                        () -> {
-                            ShelterAcc shelterAcc = new ShelterAcc(
-                                    shelterAccDTO.getEmail(),
-                                    shelterAccDTO.getJalan(),
-                                    shelterAccDTO.getMetodePembayaran(),
-                                    shelterAccDTO.getNamaOwner(),
-                                    shelterAccDTO.getNamaShelter(),
-                                    shelterAccDTO.getNegaraDaerah(),
-                                    shelterAccDTO.getNomorHandphone(),
-                                    shelterAccDTO.getZipCode(),
-                                    shelterRepository.getReferenceById(id));
-                            shelterAccRepository.save(shelterAcc);
-                            Shelter shelter = shelterRepository.getByShelterAcc_Id(id);
-                            shelter.setStatusShelter(true);
-                            shelterRepository.save(shelter);
-                            response.putAll(res.CREATED("Shelter sudah terbuat", null, null));
-                        });
+        shelterRepository.findById(id)
+                .ifPresentOrElse(shelter -> {
+                    if (shelter.isStatusShelter()) {
+                        response.putAll(res.UNAUTHORIZED("Akun sudah membuat shelter", null,
+                                "UNAUTHORIZED, Akun sudah membuat shelter"));
+                        return;
+                    }
+                    if (file != null && !file.isEmpty()) {
+                        try {
+                            String fileName = fileStorageService.uploadFile(file);
+                            shelterAccDTO.setUrlLogo(fileName);
+                        } catch (IOException e) {
+                            response.putAll(res.UNAUTHORIZED("URL logo tidak valid", null,
+                                    "UNAUTHORIZED, URL logo tidak valid"));
+                            return;
+                        }
+                    } else {
+                        shelterAccDTO.setUrlLogo(null);
+                    }
+                    ShelterAcc shelterAcc = new ShelterAcc(
+                            shelterAccDTO.getAlamatLengkap(),
+                            shelterAccDTO.getDeskripsi(),
+                            shelterAccDTO.getMetodePembayaran(),
+                            shelterAccDTO.getNamaPemilikRekening(),
+                            shelterAccDTO.getNamaShelter(),
+                            shelterAccDTO.getNomorRekening(),
+                            shelterAccDTO.getUrlLogo(),
+                            shelterRepository.getReferenceById(id));
+                    shelterAccRepository.save(shelterAcc);
+                    shelter.setStatusShelter(true);
+                    shelterRepository.save(shelter);
+                    response.putAll(res.CREATED("Shelter sudah terbuat", null, null));
+                },
+                        () -> response.putAll(
+                                res.UNAUTHORIZED("Shelter tidak ditemukan", null,
+                                        "UNAUTHORIZED, Shelter tidak ditemukan")));
         return response;
     }
 
     public Map<String, Object> editPenjual(ShelterDTO shelterDTO, Long id) {
         Map<String, Object> response = new LinkedHashMap<>();
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         shelterRepository.findById(id)
                 .ifPresentOrElse(shelter -> {
-                    shelter.setNama(shelterDTO.getNama());
-                    shelter.setEmail(shelterDTO.getEmail());
-                    shelter.setNoTelepon(shelterDTO.getNoTelepon());
+                    mapper.map(shelterDTO, shelter);
                     shelterRepository.save(shelter);
                     response.putAll(res.OK("Akun penjual telah diubah", null, null));
                 }, () -> response
@@ -191,22 +219,36 @@ public class ShelterService {
         return response;
     }
 
-    public Map<String, Object> editShelter(ShelterAccDTO shelterAccDTO, Long id) {
+    public Map<String, Object> editShelter(ShelterAccDTO shelterAccDTO, Long id, MultipartFile file) {
         Map<String, Object> response = new LinkedHashMap<>();
-        shelterAccRepository.findById(id)
-                .ifPresentOrElse(shelterAcc -> {
-                    shelterAcc.setEmail(shelterAccDTO.getEmail());
-                    shelterAcc.setJalan(shelterAccDTO.getJalan());
-                    shelterAcc.setMetodePembayaran(shelterAccDTO.getMetodePembayaran());
-                    shelterAcc.setNamaOwner(shelterAccDTO.getNamaOwner());
-                    shelterAcc.setNamaShelter(shelterAccDTO.getNamaShelter());
-                    shelterAcc.setNegaraDaerah(shelterAccDTO.getNegaraDaerah());
-                    shelterAcc.setNomorHandphone(shelterAccDTO.getNomorHandphone());
-                    shelterAcc.setZipCode(shelterAccDTO.getZipCode());
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
+        shelterRepository.findById(id)
+                .ifPresentOrElse(shelter -> {
+                    if (!shelter.isStatusShelter()) {
+                        response.putAll(res.UNAUTHORIZED("Akun tidak mempunyai shelter", null,
+                                "UNAUTHORIZED, Akun tidak mempunyai shelter"));
+                        return;
+                    }
+                    ShelterAcc shelterAcc = shelter.getShelterAcc();
+                    if (file != null && !file.isEmpty()) {
+                        try {
+                            String fileName = fileStorageService.uploadFile(file);
+                            shelterAccDTO.setUrlLogo(fileName);
+                        } catch (IOException e) {
+                            response.putAll(res.UNAUTHORIZED("URL logo tidak valid", null,
+                                    "UNAUTHORIZED, URL logo tidak valid"));
+                            return;
+                        }
+                    } else {
+                        shelterAccDTO.setUrlLogo(shelterAcc.getUrlLogo());
+                    }
+                    mapper.map(shelterAccDTO, shelterAcc);
                     shelterAccRepository.save(shelterAcc);
                     response.putAll(res.OK("Akun shelter telah diubah", null, null));
-                }, () -> response
-                        .putAll(res.UNAUTHORIZED("Akun tidak ditemukan", null, "UNAUTHORIZED, Akun tidak ditemukan")));
+                }, () -> response.putAll(
+                        res.UNAUTHORIZED("Shelter tidak ditemukan", null,
+                                "UNAUTHORIZED, Shelter tidak ditemukan")));
         return response;
     }
 

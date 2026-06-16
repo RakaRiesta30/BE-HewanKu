@@ -16,34 +16,33 @@ import jakarta.persistence.Table;
 @Table(name = "shelteracc")
 public class ShelterAcc implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String namaShelter;
-    private String namaOwner;
-    private String nomorHandphone;
-    private String email;
+    private String deskripsi;
+    private String nomorRekening;
+    private String namaPemilikRekening;
     private String metodePembayaran;
-    private String negaraDaerah;
-    private String jalan;
-    private String zipCode;
+    private String alamatLengkap;
+    private String urlLogo;
 
     @OneToOne
-    @JoinColumn(name = "shelter_id", unique=true)
+    @JoinColumn(name = "shelter_id", unique = true)
     @JsonIgnore
     private Shelter shelter;
 
     public ShelterAcc() {
     }
 
-    public ShelterAcc(String email, String jalan, String metodePembayaran, String namaOwner, String namaShelter, String negaraDaerah, String nomorHandphone, String zipCode, Shelter shelter) {
-        this.email = email;
-        this.jalan = jalan;
+    public ShelterAcc(String alamatLengkap, String deskripsi, String metodePembayaran, String namaPemilikRekening,
+            String namaShelter, String nomorRekening, String urlLogo, Shelter shelter) {
+        this.alamatLengkap = alamatLengkap;
+        this.deskripsi = deskripsi;
         this.metodePembayaran = metodePembayaran;
-        this.namaOwner = namaOwner;
+        this.namaPemilikRekening = namaPemilikRekening;
         this.namaShelter = namaShelter;
-        this.negaraDaerah = negaraDaerah;
-        this.nomorHandphone = nomorHandphone;
-        this.zipCode = zipCode;
+        this.nomorRekening = nomorRekening;
+        this.urlLogo = urlLogo;
         this.shelter = shelter;
     }
 
@@ -63,60 +62,12 @@ public class ShelterAcc implements Serializable {
         this.namaShelter = namaShelter;
     }
 
-    public String getNamaOwner() {
-        return namaOwner;
-    }
-
-    public void setNamaOwner(String namaOwner) {
-        this.namaOwner = namaOwner;
-    }
-
-    public String getNomorHandphone() {
-        return nomorHandphone;
-    }
-
-    public void setNomorHandphone(String nomorHandphone) {
-        this.nomorHandphone = nomorHandphone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getMetodePembayaran() {
         return metodePembayaran;
     }
 
     public void setMetodePembayaran(String metodePembayaran) {
         this.metodePembayaran = metodePembayaran;
-    }
-
-    public String getNegaraDaerah() {
-        return negaraDaerah;
-    }
-
-    public void setNegaraDaerah(String negaraDaerah) {
-        this.negaraDaerah = negaraDaerah;
-    }
-
-    public String getJalan() {
-        return jalan;
-    }
-
-    public void setJalan(String jalan) {
-        this.jalan = jalan;
-    }
-
-    public String getZipCode() {
-        return zipCode;
-    }
-
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
     }
 
     public Shelter getShelter() {
@@ -127,6 +78,44 @@ public class ShelterAcc implements Serializable {
         this.shelter = shelter;
     }
 
-    
-    
+    public String getNamaPemilikRekening() {
+        return namaPemilikRekening;
+    }
+
+    public void setNamaPemilikRekening(String namaPemilikRekening) {
+        this.namaPemilikRekening = namaPemilikRekening;
+    }
+
+    public String getAlamatLengkap() {
+        return alamatLengkap;
+    }
+
+    public void setAlamatLengkap(String alamatLengkap) {
+        this.alamatLengkap = alamatLengkap;
+    }
+
+    public String getNomorRekening() {
+        return nomorRekening;
+    }
+
+    public void setNomorRekening(String nomorRekening) {
+        this.nomorRekening = nomorRekening;
+    }
+
+    public String getDeskripsi() {
+        return deskripsi;
+    }
+
+    public void setDeskripsi(String deskripsi) {
+        this.deskripsi = deskripsi;
+    }
+
+    public String getUrlLogo() {
+        return urlLogo;
+    }
+
+    public void setUrlLogo(String urlLogo) {
+        this.urlLogo = urlLogo;
+    }
+
 }

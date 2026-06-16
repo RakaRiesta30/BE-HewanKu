@@ -14,6 +14,7 @@ public class PenggunaDTO {
     private String zipCode;
     private String username;
     private String displayName;
+    private String keyRole;
 
     public String getNoTelepon() {
         return noTelepon;
@@ -117,6 +118,14 @@ public class PenggunaDTO {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getKeyRole() {
+        return keyRole;
+    }
+
+    public void setKeyRole(String keyRole) {
+        this.keyRole = keyRole;
     }
 
 }

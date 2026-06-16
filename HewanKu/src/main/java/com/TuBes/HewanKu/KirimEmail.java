@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class KirimEmail {
-    @Value("${SENDINBLUE_API_KEY}")
-    private String apiKey;
-    private final String BREVO_API_KEY = apiKey;
+
+    @Value("${sendinblue.api.key}")
+    private String brevoApiKey;
 
     private final String SENDER_EMAIL = "rakariesta30@gmail.com";
 
@@ -44,7 +44,7 @@ public class KirimEmail {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
-                    .header("api-key", BREVO_API_KEY)
+                    .header("api-key", brevoApiKey)
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))

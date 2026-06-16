@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.modelmapper.Conditions;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -57,16 +59,17 @@ public class PenggunaService {
                                             adaa -> response.putAll(res.UNAUTHORIZED("Akun sudah tersedia", null,
                                                     "Unauthorized, Akun sudah tersedia")),
                                             () -> {
-                                                Pengguna pengguna = new Pengguna(
-                                                        penggunaDTO.getNamaDepan(),
-                                                        penggunaDTO.getNamaBelakang(),
-                                                        penggunaDTO.getNoTelepon(),
-                                                        penggunaDTO.getEmail(),
-                                                        passwordEncoder.encode(penggunaDTO.getPassword()));
-                                                pengguna.setDisplayName(penggunaDTO.getNamaDepan() + " "
-                                                        + penggunaDTO.getNamaBelakang());
                                                 if (Objects.equals(penggunaDTO.getConfirmPassword(),
                                                         penggunaDTO.getPassword())) {
+                                                    Pengguna pengguna = new Pengguna(
+                                                            penggunaDTO.getNamaDepan(),
+                                                            penggunaDTO.getNamaBelakang(),
+                                                            penggunaDTO.getNoTelepon(),
+                                                            penggunaDTO.getEmail(),
+                                                            passwordEncoder.encode(penggunaDTO.getPassword()));
+                                                    pengguna.setDisplayName(penggunaDTO.getNamaDepan() + " "
+                                                            + penggunaDTO.getNamaBelakang());
+                                                    pengguna.setKeyRole(penggunaDTO.getKeyRole());
                                                     penggunaRepository.save(pengguna);
                                                     response.putAll(res.CREATED("Akun telah terbuat", null, null));
                                                 } else {
@@ -74,6 +77,7 @@ public class PenggunaService {
                                                             res.FORBIDDEN("Konfirmasi password salah atau belum diisi",
                                                                     null, null));
                                                 }
+
                                             });
                         });
         return response;
@@ -86,7 +90,7 @@ public class PenggunaService {
                     if (passwordEncoder.matches(password, pengguna.getPassword())) {
                         String token = Jwts.builder()
                                 .setSubject(pengguna.getId().toString()) // id user
-                                .claim("role", "PENGGUNA")
+                                .claim("role", pengguna.getKeyRole())
                                 .claim("email", pengguna.getEmail())
                                 .setIssuedAt(new Date())
                                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 hari
@@ -157,15 +161,11 @@ public class PenggunaService {
 
     public Map<String, Object> editPengguna(PenggunaDTO penggunaDTO, Long id) {
         Map<String, Object> response = new LinkedHashMap<>();
+        ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         penggunaRepository.findById(id)
                 .ifPresentOrElse(pengguna -> {
-                    pengguna.setDisplayName(penggunaDTO.getDisplayName());
-                    pengguna.setUsername(penggunaDTO.getUsername());
-                    pengguna.setEmail(penggunaDTO.getEmail());
-                    pengguna.setNoTelepon(penggunaDTO.getNoTelepon());
-                    pengguna.setNegaraDaerah(penggunaDTO.getNegaraDaerah());
-                    pengguna.setJalan(penggunaDTO.getJalan());
-                    pengguna.setZipCode(penggunaDTO.getZipCode());
+                    mapper.map(penggunaDTO, pengguna);
                     penggunaRepository.save(pengguna);
                     response.putAll(res.OK("Akun pengguna telah diubah", null, null));
                 }, () -> response

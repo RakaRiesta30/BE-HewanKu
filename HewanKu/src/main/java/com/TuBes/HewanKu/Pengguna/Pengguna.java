@@ -32,6 +32,7 @@ public class Pengguna {
     private String password;
     private String otp;
     private List<Hewan> favorit;
+    private String keyRole;
 
     public Pengguna() {
     }
@@ -162,6 +163,14 @@ public class Pengguna {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getKeyRole() {
+        return keyRole;
+    }
+
+    public void setKeyRole(String keyRole) {
+        this.keyRole = keyRole;
     }
 
 }
