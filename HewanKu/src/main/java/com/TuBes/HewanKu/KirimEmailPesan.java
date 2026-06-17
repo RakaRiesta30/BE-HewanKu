@@ -1,16 +1,19 @@
 package com.TuBes.HewanKu;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class KirimEmailPesan {
 
-    private final String BREVO_API_KEY = "xkeysib-KODE_RAHASIA_BREVO_KAMU";
+    @Value("${sendinblue.api.key}")
+    private String brevoApiKey;
 
     private final String SENDER_EMAIL = "rakariesta30@gmail.com";
 
@@ -34,7 +37,7 @@ public class KirimEmailPesan {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
-                    .header("api-key", BREVO_API_KEY) // Header untuk Brevo
+                    .header("api-key", brevoApiKey) // Header untuk Brevo
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
@@ -49,7 +52,7 @@ public class KirimEmailPesan {
                 System.out.println("Gagal mengirim pesan dari Brevo: " + response.body());
             }
 
-        } catch (Exception e) {
+        } catch (IOException | InterruptedException e) {
             System.out.println("Error sistem: " + e.getMessage());
         }
     }

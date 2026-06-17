@@ -17,11 +17,13 @@ import com.TuBes.HewanKu.BaseResponse;
 import com.TuBes.HewanKu.Hewan.Hewan;
 import com.TuBes.HewanKu.Hewan.HewanRepository;
 import com.TuBes.HewanKu.KirimEmailPesan;
+import com.TuBes.HewanKu.Pengguna.Pengguna;
 import com.TuBes.HewanKu.Pengguna.PenggunaRepository;
 import com.TuBes.HewanKu.Shelter.Shelter;
 import com.TuBes.HewanKu.Shelter.ShelterRepository;
 
 import jakarta.transaction.Transactional;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
@@ -53,7 +55,7 @@ public class PesananService {
         this.shelterRepository = shelterRepository;
     }
 
-    public Map<String, Object> createPesanan(Long idHewan, Long idPengguna) {
+    public Map<String, Object> createPesanan(Long idHewan, Long idPengguna, FormDTO formDTO) {
         Map<String, Object> response = new LinkedHashMap<>();
         penggunaRepository.findById(idPengguna)
                 .ifPresentOrElse(pengguna -> {
@@ -63,6 +65,26 @@ public class PesananService {
                                 pesanan.setPengguna(pengguna);
                                 pesanan.setHewan(hewan);
                                 pesanan.setShelter(hewan.getShelter());
+                                Form form = new Form(
+                                        formDTO.getDaerah(),
+                                        formDTO.getEmail(),
+                                        formDTO.isHewanSebelumnya(),
+                                        formDTO.getJalan(),
+                                        formDTO.getJenisHewan(),
+                                        formDTO.getJenisKelamin(),
+                                        formDTO.isKeluargaAlergi(),
+                                        formDTO.isLingkunganAman(),
+                                        formDTO.isMemilikiHewan(),
+                                        formDTO.getNama(),
+                                        formDTO.getNoTelepon(),
+                                        formDTO.getPekerjaanStatus(),
+                                        pesanan,
+                                        formDTO.getTanggalHewan(),
+                                        formDTO.getTanggalLahir(),
+                                        formDTO.getTempatTinggal(),
+                                        formDTO.getZipCode());
+                                formRepository.save(form);
+                                pesanan.setForm(form);
                                 pesananRepository.save(pesanan);
                                 response.putAll(
                                         res.CREATED("Pesanan telah terbuat", null, null));
@@ -114,47 +136,13 @@ public class PesananService {
         return response;
     }
 
-    public Map<String, Object> isiForm(FormDTO formDTO, Long id, Long idPengguna) {
-        Map<String, Object> response = new LinkedHashMap<>();
-        penggunaRepository.findById(idPengguna)
-                .ifPresentOrElse(pengguna -> {
-                    pesananRepository.findById(id)
-                            .ifPresentOrElse(pesanan -> {
-                                Form form = new Form(
-                                        formDTO.getDaerah(),
-                                        formDTO.getEmail(),
-                                        formDTO.isHewanSebelumnya(),
-                                        formDTO.getJalan(),
-                                        formDTO.getJenisHewan(),
-                                        formDTO.getJenisKelamin(),
-                                        formDTO.isKeluargaAlergi(),
-                                        formDTO.isLingkunganAman(),
-                                        formDTO.isMemilikiHewan(),
-                                        formDTO.getNama(),
-                                        formDTO.getNoTelepon(),
-                                        formDTO.getPekerjaanStatus(),
-                                        pesanan,
-                                        formDTO.getTanggalHewan(),
-                                        formDTO.getTanggalLahir(),
-                                        formDTO.getTempatTinggal(),
-                                        formDTO.getZipCode());
-                                formRepository.save(form);
-                                pesanan.setForm(form);
-                                pesananRepository.save(pesanan);
-                                response.putAll(res.CREATED("Form telah terisi", null, null));
-                            }, () -> response.putAll(res.UNAUTHORIZED("Pesanan tidak ditemukan", null,
-                                    "UNAUTHORIZED, Pesanan tidak ditemukan")));
-                }, () -> response.putAll(
-                        res.UNAUTHORIZED("Pengguna tidak ditemukan", null, "UNAUTHORIZED, Pengguna tidak ditemukan")));
-        return response;
-    }
-
     public Map<String, Object> confirmForm(PesananDTO pesananDTO, Long id, Long idShelter) {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(idShelter)
-                .ifPresentOrElse(pengguna -> {
+                .ifPresentOrElse(shelter -> {
                     pesananRepository.findById(id)
                             .ifPresentOrElse(pesanan -> {
+                                Pengguna pengguna = pesanan.getPengguna();
                                 pesanan.setStatus(pesananDTO.getStatus());
                                 if (pesananDTO.getStatus().equals("DITERIMA")) {
                                     pesanan.setStatusPembayaran("pending");
@@ -166,9 +154,18 @@ public class PesananService {
                                     try {
                                         String tokenLinkPembayaran = createSnapToken(pesanan.getKodePemesanan(),
                                                 hargaHewan);
+                                        ObjectMapper objectMapper = new ObjectMapper();
+                                        JsonNode rootNode = objectMapper.readTree(tokenLinkPembayaran);
+                                        JsonNode Jsontoken = rootNode.get("token");
+                                        JsonNode JsonredirectUrl = rootNode.get("redirect_url");
+                                        String token = objectMapper.writeValueAsString(Jsontoken);
+                                        String redirectUrl = objectMapper.writeValueAsString(JsonredirectUrl);
+                                        pesanan.setTokenPembayaran(token);
+                                        pesanan.setLinkPembayaran(redirectUrl);
                                         response.putAll(
                                                 res.OK("Pesanan diterima dan pembayaran dibuat dengan token dan link = "
                                                         + tokenLinkPembayaran, null, null));
+                                        pesananRepository.save(pesanan);
                                     } catch (Exception e) {
                                         response.putAll(
                                                 res.FORBIDDEN("Gagal terhubung ke server pembayaran: ",
@@ -260,6 +257,9 @@ public class PesananService {
                 if (newStatusPembayaran.equals("settlement") || newStatusPembayaran.equals("capture")) {
                     Shelter shelter = pesanan.getShelter();
                     shelter.setHewanDibeli(shelter.getHewanDibeli() + 1);
+                    Hewan hewan = pesanan.getHewan();
+                    hewan.setStatus("terjual");
+                    hewanRepository.save(hewan);
                     shelterRepository.save(shelter);
                 }
             } else {

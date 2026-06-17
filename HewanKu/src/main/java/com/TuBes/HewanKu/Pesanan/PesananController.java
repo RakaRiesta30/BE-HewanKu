@@ -19,9 +19,10 @@ public class PesananController {
     private PesananService pesananService;
 
     @PostMapping("/{idHewan}/create")
-    public Map<String, Object> createPesanan(@PathVariable Long idHewan, Authentication authentication) {
+    public Map<String, Object> createPesanan(@PathVariable Long idHewan, Authentication authentication,
+            @RequestBody FormDTO formDTO) {
         Long idPengguna = (Long) authentication.getPrincipal();
-        return pesananService.createPesanan(idHewan, idPengguna);
+        return pesananService.createPesanan(idHewan, idPengguna, formDTO);
     }
 
     @GetMapping("/pengguna/view")
@@ -34,13 +35,6 @@ public class PesananController {
     public Map<String, Object> viewPesananShelter(Authentication authentication) {
         Long idShelter = (Long) authentication.getPrincipal();
         return pesananService.viewPesananShelter(idShelter);
-    }
-
-    @PostMapping("/{id}/fill")
-    public Map<String, Object> isiForm(@RequestBody FormDTO formDTO, @PathVariable Long id,
-            Authentication authentication) {
-        Long idPengguna = (Long) authentication.getPrincipal();
-        return pesananService.isiForm(formDTO, id, idPengguna);
     }
 
     @PatchMapping("/{id}/confirm")

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.TuBes.HewanKu.BaseResponse;
 import com.TuBes.HewanKu.Hewan.HewanRepository;
+import com.TuBes.HewanKu.Pengguna.Pengguna;
+import com.TuBes.HewanKu.Pengguna.PenggunaRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -19,6 +21,9 @@ public class UlasanService {
     private final UlasanRepository ulasanRepository;
     private final BaseResponse res;
     private final HewanRepository hewanRepository;
+
+    @Autowired
+    private PenggunaRepository penggunaRepository;
 
     @Autowired
     public UlasanService(HewanRepository hewanRepository, UlasanRepository ulasanRepository, BaseResponse res) {
@@ -31,11 +36,13 @@ public class UlasanService {
         Map<String, Object> response = new LinkedHashMap<>();
         hewanRepository.findById(id)
                 .ifPresentOrElse(hewan -> {
+                    Pengguna pengguna = penggunaRepository.getReferenceById(idPengguna);
                     Ulasan ulasan = new Ulasan(
                             LocalDate.now(),
                             hewan,
                             ulasanDTO.getKomen(),
                             ulasanDTO.getRating());
+                    ulasan.setUsername(pengguna.getDisplayName());
                     ulasanRepository.save(ulasan);
                     List<Double> rating = ulasanRepository.findByHewan_Id(id)
                             .stream()

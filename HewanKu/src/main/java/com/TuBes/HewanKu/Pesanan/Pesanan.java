@@ -30,6 +30,8 @@ public class Pesanan implements Serializable {
     private String status;
     private String statusPembayaran;
     private LocalDate timeLeft;
+    private String tokenPembayaran;
+    private String linkPembayaran;
 
     @OneToOne(mappedBy = "pesanan", cascade = CascadeType.ALL)
     private Form form;
@@ -131,5 +133,21 @@ public class Pesanan implements Serializable {
 
     public void setStatusPembayaran(String statusPembayaran) {
         this.statusPembayaran = statusPembayaran;
+    }
+
+    public String getTokenPembayaran() {
+        return tokenPembayaran;
+    }
+
+    public void setTokenPembayaran(String tokenPembayaran) {
+        this.tokenPembayaran = tokenPembayaran;
+    }
+
+    public String getLinkPembayaran() {
+        return linkPembayaran;
+    }
+
+    public void setLinkPembayaran(String linkPembayaran) {
+        this.linkPembayaran = linkPembayaran;
     }
 }

@@ -3,9 +3,12 @@ package com.TuBes.HewanKu.Pengguna;
 import java.util.List;
 
 import com.TuBes.HewanKu.Hewan.Hewan;
+import com.TuBes.HewanKu.JsonListHewanConverter;
 import com.TuBes.HewanKu.Pesanan.Pesanan;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,6 +34,8 @@ public class Pengguna {
     @JsonIgnore
     private String password;
     private String otp;
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = JsonListHewanConverter.class)
     private List<Hewan> favorit;
     private String keyRole;
 

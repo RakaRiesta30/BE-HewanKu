@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,7 +60,7 @@ public class PenggunaController {
                 penggunaDTO.getEmail());
     }
 
-    @PatchMapping("/editPengguna")
+    @PutMapping("/editPengguna")
     public Map<String, Object> editPengguna(@RequestBody PenggunaDTO penggunaDTO, Authentication authentication) {
         Long idPengguna = (Long) authentication.getPrincipal();
         return penggunaService.editPengguna(penggunaDTO, idPengguna);

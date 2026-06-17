@@ -1,5 +1,7 @@
 package com.TuBes.HewanKu.Shelter;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class ShelterAccDTO {
     private String namaShelter;
     private String deskripsi;
@@ -7,6 +9,7 @@ public class ShelterAccDTO {
     private String namaPemilikRekening;
     private String metodePembayaran;
     private String alamatLengkap;
+    private MultipartFile gambarLogo;
     private String urlLogo;
 
     public ShelterAccDTO() {
@@ -66,5 +69,13 @@ public class ShelterAccDTO {
 
     public void setUrlLogo(String urlLogo) {
         this.urlLogo = urlLogo;
+    }
+
+    public MultipartFile getGambarLogo() {
+        return gambarLogo;
+    }
+
+    public void setGambarLogo(MultipartFile gambarLogo) {
+        this.gambarLogo = gambarLogo;
     }
 }

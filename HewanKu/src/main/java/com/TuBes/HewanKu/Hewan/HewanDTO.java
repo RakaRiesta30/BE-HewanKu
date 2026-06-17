@@ -1,5 +1,7 @@
 package com.TuBes.HewanKu.Hewan;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class HewanDTO {
     private String nama;
     private String jenis;
@@ -8,6 +10,7 @@ public class HewanDTO {
     private int umur;
     private String jenisKelamin;
     private String nomorTelepon;
+    private MultipartFile gambarHewan;
     private String urlFoto;
 
     public int getUmur() {
@@ -72,5 +75,13 @@ public class HewanDTO {
 
     public void setUrlFoto(String urlFoto) {
         this.urlFoto = urlFoto;
+    }
+
+    public MultipartFile getGambarHewan() {
+        return gambarHewan;
+    }
+
+    public void setGambarHewan(MultipartFile gambarHewan) {
+        this.gambarHewan = gambarHewan;
     }
 }

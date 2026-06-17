@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.TuBes.HewanKu.BaseResponse;
 import com.TuBes.HewanKu.FileStorageService;
@@ -164,7 +163,7 @@ public class ShelterService {
         return response;
     }
 
-    public Map<String, Object> createShelter(ShelterAccDTO shelterAccDTO, Long id, MultipartFile file) {
+    public Map<String, Object> createShelter(ShelterAccDTO shelterAccDTO, Long id) {
         Map<String, Object> response = new LinkedHashMap<>();
         shelterRepository.findById(id)
                 .ifPresentOrElse(shelter -> {
@@ -173,9 +172,9 @@ public class ShelterService {
                                 "UNAUTHORIZED, Akun sudah membuat shelter"));
                         return;
                     }
-                    if (file != null && !file.isEmpty()) {
+                    if (shelterAccDTO.getGambarLogo() != null && !shelterAccDTO.getGambarLogo().isEmpty()) {
                         try {
-                            String fileName = fileStorageService.uploadFile(file);
+                            String fileName = fileStorageService.uploadFile(shelterAccDTO.getGambarLogo());
                             shelterAccDTO.setUrlLogo(fileName);
                         } catch (IOException e) {
                             response.putAll(res.UNAUTHORIZED("URL logo tidak valid", null,
@@ -219,7 +218,7 @@ public class ShelterService {
         return response;
     }
 
-    public Map<String, Object> editShelter(ShelterAccDTO shelterAccDTO, Long id, MultipartFile file) {
+    public Map<String, Object> editShelter(ShelterAccDTO shelterAccDTO, Long id) {
         Map<String, Object> response = new LinkedHashMap<>();
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
@@ -231,9 +230,9 @@ public class ShelterService {
                         return;
                     }
                     ShelterAcc shelterAcc = shelter.getShelterAcc();
-                    if (file != null && !file.isEmpty()) {
+                    if (shelterAccDTO.getGambarLogo() != null && !shelterAccDTO.getGambarLogo().isEmpty()) {
                         try {
-                            String fileName = fileStorageService.uploadFile(file);
+                            String fileName = fileStorageService.uploadFile(shelterAccDTO.getGambarLogo());
                             shelterAccDTO.setUrlLogo(fileName);
                         } catch (IOException e) {
                             response.putAll(res.UNAUTHORIZED("URL logo tidak valid", null,

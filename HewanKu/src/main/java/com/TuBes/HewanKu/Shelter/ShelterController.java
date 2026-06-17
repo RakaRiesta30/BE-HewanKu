@@ -7,14 +7,13 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.TuBes.HewanKu.Hewan.HewanDTO;
 import com.TuBes.HewanKu.Hewan.HewanService;
@@ -61,10 +60,10 @@ public class ShelterController {
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, Object> createShelter(@RequestPart("shelterAcc") ShelterAccDTO shelterAccDTO,
-            @RequestPart("file") MultipartFile file, Authentication authentication) {
+    public Map<String, Object> createShelter(@ModelAttribute ShelterAccDTO shelterAccDTO,
+            Authentication authentication) {
         Long idShelter = (Long) authentication.getPrincipal();
-        return shelterService.createShelter(shelterAccDTO, idShelter, file);
+        return shelterService.createShelter(shelterAccDTO, idShelter);
     }
 
     @PatchMapping("/editPenjual")
@@ -74,10 +73,10 @@ public class ShelterController {
     }
 
     @PatchMapping(value = "/editShelter", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, Object> editShelter(@RequestPart("shelterAcc") ShelterAccDTO shelterAccDTO,
-            @RequestPart("file") MultipartFile file, Authentication authentication) {
+    public Map<String, Object> editShelter(@ModelAttribute ShelterAccDTO shelterAccDTO,
+            Authentication authentication) {
         Long idShelter = (Long) authentication.getPrincipal();
-        return shelterService.editShelter(shelterAccDTO, idShelter, file);
+        return shelterService.editShelter(shelterAccDTO, idShelter);
     }
 
     @GetMapping("/view")
@@ -93,17 +92,16 @@ public class ShelterController {
     }
 
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, Object> createHewan(@RequestPart("hewan") HewanDTO hewanDTO, Authentication authentication,
-            @RequestPart("file") MultipartFile file) {
+    public Map<String, Object> createHewan(@ModelAttribute HewanDTO hewanDTO, Authentication authentication) {
         Long idShelter = (Long) authentication.getPrincipal();
-        return hewanService.createHewan(hewanDTO, idShelter, file);
+        return hewanService.createHewan(hewanDTO, idShelter);
     }
 
     @PatchMapping(value = "/edit/{idHewan}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, Object> editHewan(@RequestPart("hewan") HewanDTO hewanDTO, Authentication authentication,
-            @PathVariable Long idHewan, @RequestPart("file") MultipartFile file) {
+    public Map<String, Object> editHewan(@ModelAttribute HewanDTO hewanDTO, Authentication authentication,
+            @PathVariable Long idHewan) {
         Long idShelter = (Long) authentication.getPrincipal();
-        return hewanService.editHewan(hewanDTO, idShelter, idHewan, file);
+        return hewanService.editHewan(hewanDTO, idShelter, idHewan);
     }
 
     @GetMapping("/view/shelterAcc")

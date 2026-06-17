@@ -1,5 +1,6 @@
 package com.TuBes.HewanKu;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -61,7 +62,7 @@ public class KirimEmail {
                 return response.body();
             }
 
-        } catch (Exception e) {
+        } catch (IOException | InterruptedException e) {
             System.out.println("Error sistem: " + e.getMessage());
             return e.getMessage();
         }

@@ -18,11 +18,12 @@ import jakarta.persistence.Table;
 @Table(name = "ulasan")
 public class Ulasan implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String komen;
     private Double rating;
     private LocalDate dateAdded;
+    private String username;
 
     @ManyToOne
     @JoinColumn(name = "hewan_id")
@@ -78,6 +79,13 @@ public class Ulasan implements Serializable {
     public void setRating(Double rating) {
         this.rating = rating;
     }
-    
-    
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
 }
